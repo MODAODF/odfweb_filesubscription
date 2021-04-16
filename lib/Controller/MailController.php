@@ -41,8 +41,7 @@ class MailController extends Controller {
 
 	/**
 	 *
-	 * @param IUser $user
-	 * @param IEmailTemplate $emailTemplate
+	 * @param string $shareLink URL of shared file
 	 * @throws \Exception If mail could not be sent
 	 */
 	public function sendMail($shareLink) {
@@ -62,7 +61,8 @@ class MailController extends Controller {
                 $template->addHeader();
                 $template->addHeading('文件訂閱通知');
                 $body = '<h4><u>你訂閱的文件發布新版本囉</u><h4>';
-                $template->addBodyText($body, $body);
+				$template->addBodyText($body, $body);
+				$template->addBodyButton($this->l10n->t('Open File'), $shareLink);
                 $template->addFooter();
 
                 $message = $this->mailer->createMessage();

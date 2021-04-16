@@ -2916,49 +2916,88 @@ __webpack_require__.r(__webpack_exports__);
       return 'icon-mail';
     },
     template: function template() {
-      return '<div>tab content：</div>';
+      return "<div class=\"loading icon-loading-small\"></div>\n\t\t\t  <div class=\"linksWrapper hidden\"></div>";
     },
-    render: function render() {
-      this.$el.html(this.template());
-
-      this._renderSendMailBtn(this.$el); // delegate all btn Events
-
-
-      this.delegateEvents({
-        'click #sendMail': '_onSendMailEvent'
-      });
+    _templates: {
+      getLinkFail: function getLinkFail() {
+        return '<div>無法取得分享連結</div>';
+      },
+      noLink: function noLink() {
+        return '<div>沒有分享連結</div>';
+      },
+      initList: function initList() {
+        return '<div>已建立的外部分享連結：<ul></ul></div>';
+      },
+      $li: function $li(i, item) {
+        return "<li file-id=".concat(item.id, " index=").concat(i, ">\n\t\t\t\t\t<h5><b>\u5206\u4EAB\u9023\u7D50(").concat(item.label, ")</b></h5>\n\t\t\t\t\t<span>").concat(item.url, "</span>\n\t\t\t\t\t<button id=\"mailBtn\" type=\"button\">").concat(t(this.appId, 'Send mail'), "</button>\n\t\t\t\t</li><hr>");
+      }
     },
 
     /**
-     * 取的 Share links
+     * Renders this details view
+     *
+     * @abstract
+     */
+    render: function render() {
+      this.$el.html(this.template());
+
+      this._getShareLinks(); // 取得已知分享連結
+      // delegate all btn Events
+
+
+      this.delegateEvents({
+        'click #mailBtn': '_onSendMailEvent'
+      });
+    },
+    _shareLinks: null,
+    _renderShareLinksResult: function _renderShareLinksResult(resp) {
+      var $wrapper = $('.linksWrapper');
+      var templates = this._templates;
+      if (!resp || !resp.ocs.data) $wrapper.html(templates.getLinkFail());else if (resp.ocs.data.length < 1) $wrapper.html(templates.noLink());else {
+        $wrapper.html(templates.initList());
+        this._shareLinks = resp.ocs.data;
+
+        this._shareLinks.forEach(function (item, i) {
+          // 是分享連結
+          if (item.share_type === OC.Share.SHARE_TYPE_LINK) {
+            var li = templates.$li(i, item);
+            $wrapper.find('ul').append(li);
+          }
+        });
+      }
+      $wrapper.show();
+    },
+
+    /**
+     * 取得 Share links 資料
      * @param {OCA.Files.FileInfoModel} fileInfo file info model
      */
     _getShareLinks: function _getShareLinks() {
-      var fullPath = this._fileFullPath();
-
+      var file = this.getFileInfo();
+      var path = "".concat(file.attributes.path, "/").concat(file.attributes.name);
+      var fullPath = path.replace('//', '/');
       var url = Object(_nextcloud_router__WEBPACK_IMPORTED_MODULE_0__["generateOcsUrl"])("apps/files_sharing/api/v1/shares?format=json&path=".concat(encodeURIComponent(fullPath)), 2);
+      var self = this;
       $.ajax({
         url: url,
         type: 'GET'
-      }).done(function (resp) {
-        console.debug('_getShareLinks ajax Done');
+      }).done(function () {// $(this.$el).find('ul').show()
       }).fail(function (e) {
-        console.debug('_getShareLinks ajax fail');
-      }).always(function () {
-        console.debug('_getShareLinks ajax always');
+        console.debug('filesubscription _getShareLinks fail', e);
+      }).always(function (resp) {
+        $(self.$el).find('.loading').hide();
+
+        self._renderShareLinksResult(resp);
       });
     },
-    _renderSendMailBtn: function _renderSendMailBtn($el) {
-      var txt = t(this.appId, 'Send mail');
-      var btn = '<button id="mailBtn" type="button">' + txt + '</button>';
-      $el.append(btn);
-    },
-    _onSendMailEvent: function _onSendMailEvent() {
+    _onSendMailEvent: function _onSendMailEvent(e) {
+      var i = $(e.target).closest('li').attr('index');
+      var shareLink = this._shareLinks[i].url;
       $.ajax({
         url: OC.generateUrl('/apps/filesubscription/mail'),
         type: 'POST',
         data: {
-          shareLink: OC.generateUrl('s/1231321321313')
+          shareLink: shareLink
         }
       }).done(function (resp) {
         console.debug('_onSendMailEvent ajax Done');
