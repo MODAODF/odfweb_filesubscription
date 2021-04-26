@@ -22,5 +22,6 @@ module.exports = {
 		'no-unreachable': process.env.NODE_ENV === 'production' ? 'error': 'off',
 		'no-console': ['error', { allow: ['error', 'warn', 'debug'] }],
 		'no-tabs': 0,
+		'dot-notation': 'off',
 	}
 };

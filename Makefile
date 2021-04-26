@@ -1,12 +1,13 @@
 # Makefile for building the project
 
 app_name=filesubscription
-buildjs_dir=$(CURDIR)/js
+buildjs_dist=$(CURDIR)/js/dist
 
 clean:
-	rm -fr $(buildjs_dir)
+	rm -fr $(buildjs_dist)
 
 dev: clean
+	node node_modules/handlebars/bin/handlebars -n OCA.FileSubscription.Templates src/templates -f js/templates.js
 	npm run dev
 
 buildjs: clean

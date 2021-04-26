@@ -4,12 +4,12 @@ const {merge} = require('webpack-merge')
 
 module.exports = {
 	entry: {
-		'filesubscription': path.join(__dirname, 'src', 'filesubscription.js')
-		// plugin: path.join(__dirname, 'src', 'plugin.js'),
-		// tabview: path.join(__dirname, 'src', 'tabview.js'),
+		'plugin': path.join(__dirname, 'src', 'plugin.js'),
+		'tabview': path.join(__dirname, 'src', 'tabview.js'),
+		'sharedfile': path.join(__dirname, 'src', 'sharedfile.js'),
 	},
 	output: {
-		path: path.resolve(__dirname, './js'),
+		path: path.resolve(__dirname, './js/dist'),
 		publicPath: '/js/',
 		filename: '[name].js',
 		chunkFilename: '[name].[chunkhash].js'

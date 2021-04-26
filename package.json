@@ -16,6 +16,7 @@
     "@nextcloud/l10n": "^1.4.1",
     "@nextcloud/router": "^1.2.0",
     "@nextcloud/vue": "^2.7.0",
+    "handlebars": "^4.7.7",
     "jquery": "^2.2.4",
     "style-loader": "^2.0.0",
     "vue": "^2.6.12"
