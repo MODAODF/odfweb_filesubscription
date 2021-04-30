@@ -25,6 +25,7 @@ class Manager {
 	}
 
 	/**
+	 * 加入新的訂閱者
 	 * @param int $shareId
 	 * @param string $mailAddr
 	 * @param int $time
@@ -40,6 +41,7 @@ class Manager {
 		}
 
 		try {
+			$isNewShareId = false;
 			$subscription = $this->subscriptionMapper->getByShareId($shareId);
 		} catch (DoesNotExistException $e) {
 			$isNewShareId = true;
@@ -70,18 +72,50 @@ class Manager {
 	}
 
 	/**
+	 * 取得單一訂閱資訊
 	 * @param int $shareId
 	 * @return Subscription
 	 * @throws SubscriptionDoesNotExistException
 	 */
 	public function getSubscription(int $shareId): Subscription {
+		// TODO 只有admin或 有ShareLink權限的user 可以取得
 		try {
 			$subscription = $this->subscriptionMapper->getByShareId($shareId);
 		} catch (DoesNotExistException $e) {
 			throw new SubscriptionDoesNotExistException();
 		}
-
 		return $subscription;
+	}
+
+	/**
+	 * 取得單一分享連結 是否啟用
+	 * @param int $shareId
+	 * @return int $isEnable
+	 */
+	public function getEnabled(int $shareId) {
+		try {
+			$subscription = $this->subscriptionMapper->getByShareId($shareId);
+			$isEnabled = $subscription->getEnabled();
+		} catch (DoesNotExistException $e) {
+			$isEnabled = false;
+		}
+		return $isEnabled;
+	}
+	/**
+	 * 設定單一分享連結 是否啟用
+	 *
+	 * @param int $shareId
+	 * @param bool $setVal
+	 *
+	 */
+	public function setEnabled(int $shareId, bool $setVal) {
+		try {
+			$subscription = $this->subscriptionMapper->getByShareId($shareId);
+			$subscription->setEnabled((int) $setVal);
+			$this->subscriptionMapper->update($subscription);
+		} catch (DoesNotExistException $e) {
+			throw new SubscriptionDoesNotExistException();
+		}
 	}
 
 	// TODO

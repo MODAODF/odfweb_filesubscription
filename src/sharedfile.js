@@ -3,11 +3,22 @@ import '../css/sharedfile.scss'
 
 const SharedFile = {
 
+	sharingToken: $('#sharingToken').val(),
+
 	init() {
-		this._renderHeader()
+		// 取得此分享連結是否啟用訂閱
+		$.ajax({
+			context: this,
+			url: OC.generateUrl('/apps/filesubscription/subscribe/state/' + this.sharingToken),
+			type: 'GET',
+		}).done(function(res) {
+			if (res) this.renderHeader()
+		}).fail(function(e) {
+			console.debug('filesubscription _isSubscribable fail()', e)
+		})
 	},
 
-	_renderHeader() {
+	renderHeader() {
 		const headerRight = document.querySelector('#header .header-right')
 		if (!document.getElementById('filesubscription-header')) {
 			const newHeader = document.createElement('div')
@@ -15,11 +26,11 @@ const SharedFile = {
 			headerRight.insertBefore(newHeader, headerRight.firstChild)
 
 			// header content
-			const content = OCA.FileSubscription.Templates['sharedfild-header']({ placeholder: 'Enter your email' })
+			const content = OCA.FileSubscription.Templates['sharedfile-header']({ placeholder: 'Enter your email' })
 			$('#filesubscription-header').append(content)
 
-			$('#subscription-icon').on('click', this._onOpenEvent)
-			$('form#subscription-mail').on('submit', this._onConfirmEvent)
+			$('#subscription-icon').on('click', this._onOpenEvent.bind(this))
+			$('form#subscription-mail').on('submit', this._onConfirmEvent.bind(this))
 
 		}
 	},
@@ -39,13 +50,13 @@ const SharedFile = {
 			data: { message: '' }
 		}
 
-		const sharingToken = $('#sharingToken').val()
+		const token = this.sharingToken
 		const mailAddr = $('form#subscription-mail input[name="email"]').val()
 
 		$.ajax({
 			url: OC.generateUrl('/apps/filesubscription/subscribe'),
 			type: 'POST',
-			data: { sharingToken, mailAddr },
+			data: { token, mailAddr },
 			beforeSend() {
 				$('form#subscription-mail input').attr('disabled', 'disabled')
 				OC.msg.startAction(msgEl, '處理中...')
@@ -54,7 +65,6 @@ const SharedFile = {
 			msgResponse.data.message = '訂閱成功'
 			msgResponse.status = 'success'
 			$('form#subscription-mail input[name="email"]').val('')
-
 		}).fail(function(e) {
 			msgResponse.data.message = '無法訂閱'
 			console.debug('filesubscription _onConfirmEvent fail()', e)
@@ -62,7 +72,6 @@ const SharedFile = {
 		}).always(function(resp) {
 			OC.msg.finishedAction(msgEl, msgResponse)
 			$('form#subscription-mail input').removeAttr('disabled')
-			console.debug('filesubscription _onConfirmEvent always()', resp)
 		})
 	},
 

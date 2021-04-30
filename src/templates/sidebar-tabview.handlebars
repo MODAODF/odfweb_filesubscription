@@ -1,0 +1,13 @@
+{{!-- index={{i}} --}}
+<li share-id={{item.id}} >
+    <h5><b>分享連結 {{item.id}} ({{item.label}})</b></h5>
+
+    <div class="resultMsg hidden">OK!</div>
+
+    <input type="checkbox" class="checkbox" name="subscribable" id="subscribable{{item.id}}" >
+    <label for="subscribable{{item.id}}">開放訂閱</label>
+
+
+    <span>{{item.url}}</span>
+    <button id="mailBtn" type="button">SendMail</button>
+</li><hr>

@@ -7,6 +7,7 @@ use OCP\IConfig;
 use OCP\IUser;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\JSONResponse;
+use OCP\AppFramework\Http\DataResponse;
 use OCA\FileSubscription\Manager;
 use OCA\FileSubscription\Model\Subscription;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -41,23 +42,45 @@ class SubscribeController extends Controller {
 		$this->shareManager = $shareManager;
 	}
 
-	// /**
-	//  * 取得單一分享連結的訂閱Emails
-	//  */
-	// public function getSubscription($shareId) {
+	/**
+	 * 取得單一分享連結的訂閱Emails  @AdminRequired
+	 * @NoAdminRequired
+	 * @PublicPage
+	 *
+	 */
+	public function getSubscription($shareId) {
 
-	// 	// TODO: 只有admin可以讀取訂閱者資料
-	// 	// if (!$this->manager->checkIsAdmin()) {
-	// 	// 	return new JSONResponse(
-	// 	// 		['message' => 'Logged in user must be an admin'],
-	// 	// 		Http::STATUS_FORBIDDEN
-	// 	// 	);
-	// 	// }
+		// TODO: 只有admin可以讀取訂閱者資料
+		// if (!$this->manager->checkIsAdmin()) {
+		// 	return new JSONResponse(
+		// 		['message' => 'Logged in user must be an admin'],
+		// 		Http::STATUS_FORBIDDEN
+		// 	);
+		$subscription = $this->manager->getSubscription($shareId);
+		$result  = $this->renderSubscription($subscription);
+		return new DataResponse($result);
+	}
 
-	// 	$subscription = $this->manager->getSubscription($shareId);
-	// 	$result  = $subscription; // ->getMessage();
-	// 	return new JSONResponse($result);
-	// }
+	/**
+	 * 取得單一分享連結的訂閱啟用值
+	 * @NoAdminRequired
+	 * @PublicPage
+	 *
+	 * @param string $token
+	 */
+	public function getState(string $token) {
+		$shareId = $this->getShareId($token);
+		$status = $this->manager->getEnabled($shareId);
+		return new JSONResponse($status);
+	}
+	/**
+	 * 設定單一分享連結的訂閱啟用值
+	 * @param int $shareId
+	 * @param bool $setVal
+	 */
+	public function setState(int $shareId, bool $setVal) {
+		$this->manager->setEnabled($shareId, $setVal);
+	}
 
 	/**
 	 * 加入訂閱 Email
@@ -66,21 +89,13 @@ class SubscribeController extends Controller {
 	 * @NoCSRFRequired
 	 * @PublicPage
 	 *
-	 * @param string $sharingToken
+	 * @param string $token
 	 * @param string $mailAddr
 	 *
 	 */
-	public function addSubscriber(string $sharingToken, string $mailAddr) {
+	public function addSubscriber(string $token, string $mailAddr) {
 
-		// 取得 shareId
-		try {
-			$shareId = $this->shareManager->getShareByToken($sharingToken)->getId();
-		} catch (\Exception $e) {
-			return new JSONResponse(
-				['error' => 'fail to get ShareId By Token' . $e],
-				Http::STATUS_BAD_REQUEST
-			);
-		}
+		$shareId = $this->getShareId($token);
 
 		try {
 			$subscription = $this->manager->subscribe($shareId, $mailAddr, $this->timeFactory->getTime());
@@ -90,8 +105,25 @@ class SubscribeController extends Controller {
 				Http::STATUS_BAD_REQUEST
 			);
 		}
+		return new JSONResponse(
+			$this->renderSubscription($subscription)
+		);
+	}
 
-		return new JSONResponse($this->renderSubscription($subscription));
+	/**
+	 *  用 share token 取得 shareId
+	 * @param string $token
+	 */
+	private function getShareId(string $token) {
+		try {
+			$shareId = $this->shareManager->getShareByToken($token)->getId();
+		} catch (\Exception $e) {
+			return new JSONResponse(
+				['error' => 'fail to get ShareId By Token' . $e],
+				Http::STATUS_BAD_REQUEST
+			);
+		}
+		return $shareId;
 	}
 
 	// /**
@@ -101,11 +133,11 @@ class SubscribeController extends Controller {
 	//  * @NoCSRFRequired
 	//  * @PublicPage
 	//  *
-	//  * @param string $sharingToken
+	//  * @param string $token
 	//  * @param string $mailAddr
 	//  *
 	//  */
-	// private function deleteSubscriber(string $sharingToken, string $mailAddr) {}
+	// private function deleteSubscriber(string $token, string $mailAddr) {}
 
 	protected function renderSubscription(Subscription $subscription): array {
 		$result = [
