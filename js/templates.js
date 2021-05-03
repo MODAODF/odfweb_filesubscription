@@ -28,14 +28,14 @@ templates['sidebar-tabview'] = template({"1":function(container,depth0,helpers,p
     + alias2(alias1(((stack1 = (depth0 != null ? lookupProperty(depth0,"share") : depth0)) != null ? lookupProperty(stack1,"id") : stack1), depth0))
     + " ("
     + alias2(alias1(((stack1 = (depth0 != null ? lookupProperty(depth0,"share") : depth0)) != null ? lookupProperty(stack1,"label") : stack1), depth0))
-    + ")</b></h5>\n\n    <div><span class=\"msg hidden\"></span></div>\n\n    <input type=\"checkbox\" class=\"checkbox\" name=\"subscribable\" id=\"subscribable"
+    + ")</b></h5>\n\n    <input type=\"checkbox\" class=\"checkbox\" name=\"subscribable\" id=\"subscribable"
     + alias2(alias1(((stack1 = (depth0 != null ? lookupProperty(depth0,"share") : depth0)) != null ? lookupProperty(stack1,"id") : stack1), depth0))
     + "\" "
-    + ((stack1 = lookupProperty(helpers,"if").call(depth0 != null ? depth0 : (container.nullContext || {}),((stack1 = (depth0 != null ? lookupProperty(depth0,"subscr") : depth0)) != null ? lookupProperty(stack1,"enabled") : stack1),{"name":"if","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data,"loc":{"start":{"line":7,"column":94},"end":{"line":7,"column":133}}})) != null ? stack1 : "")
+    + ((stack1 = lookupProperty(helpers,"if").call(depth0 != null ? depth0 : (container.nullContext || {}),((stack1 = (depth0 != null ? lookupProperty(depth0,"subscr") : depth0)) != null ? lookupProperty(stack1,"enabled") : stack1),{"name":"if","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data,"loc":{"start":{"line":5,"column":94},"end":{"line":5,"column":133}}})) != null ? stack1 : "")
     + ">\n    <label for=\"subscribable"
     + alias2(alias1(((stack1 = (depth0 != null ? lookupProperty(depth0,"share") : depth0)) != null ? lookupProperty(stack1,"id") : stack1), depth0))
     + "\">開放訂閱</label>\n\n    <span>"
     + alias2(alias1(((stack1 = (depth0 != null ? lookupProperty(depth0,"share") : depth0)) != null ? lookupProperty(stack1,"url") : stack1), depth0))
-    + "</span>\n    <button id=\"mailBtn\" type=\"button\">SendMail</button>\n</li><hr>\n";
+    + "</span>\n    <button id=\"mailBtn\" type=\"button\">SendMail</button>\n    <span class=\"msg hidden\"></span>\n\n</li><hr>\n";
 },"useData":true});
 })();

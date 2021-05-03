@@ -52,7 +52,6 @@ import '../css/tabview.scss'
 			})
 		},
 
-		_shareLinks: null,
 		_renderInitData(obj) {
 
 			const $wrapper = $('.linksWrapper')
@@ -62,7 +61,6 @@ import '../css/tabview.scss'
 			else if (obj.data.length < 1) $wrapper.html(templates.noLink())
 			else {
 				$wrapper.html(templates.initList())
-				this._shareLinks = obj.data.sharing
 				for (const idx in obj.data) {
 					const row = obj.data[idx]
 					if (!row.subscription) {
@@ -105,20 +103,30 @@ import '../css/tabview.scss'
 		},
 
 		_onSendMailEvent(e) {
-			const i = $(e.target).closest('li').attr('index')
-			const shareLink = this._shareLinks[i].url
+			const shareId = $(e.target).closest('li').attr('share-id')
+			const $thisLi = $(`li[share-id=${shareId}]`)
+
+			const msgEl = $thisLi.find('.msg')
+			const msgResponse = { status: '', data: { message: '' } }
+
 			$.ajax({
 				url: OC.generateUrl('/apps/filesubscription/mail'),
 				type: 'POST',
-				data: {
-					shareLink,
-				},
+				data: { shareId },
+				beforeSend() {
+					$thisLi.children('input, button').attr('disabled', 'disabled')
+					OC.msg.startAction(msgEl, '傳送中...')
+				}
 			}).done(function(resp) {
-				console.debug('_onSendMailEvent ajax Done')
+				msgResponse.status = 'success'
+				msgResponse.data.message = resp.data.message
+				console.debug('SendMail ajax Done', resp)
 			}).fail(function(e) {
-				console.debug('_onSendMailEvent ajax fail')
+				msgResponse.data.message = '郵件寄送失敗'
+				console.debug('SendMail ajax fail', e)
 			}).always(function() {
-				console.debug('_onSendMailEvent ajax always')
+				OC.msg.finishedAction(msgEl, msgResponse)
+				$thisLi.children('input, button').removeAttr('disabled')
 			})
 		},
 
@@ -155,7 +163,6 @@ import '../css/tabview.scss'
 				OC.msg.finishedAction(msgEl, msgResponse)
 				$thisLi.children('input, button').removeAttr('disabled')
 			})
-
 		},
 
 	})
