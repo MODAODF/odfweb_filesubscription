@@ -1,5 +1,5 @@
-import { generateOcsUrl } from '@nextcloud/router'
-import '../css/main.scss'
+// import { generateOcsUrl } from '@nextcloud/router'
+import '../css/tabview.scss'
 
 (function() {
 	const TabView = OCA.Files.DetailTabView.extend({
@@ -32,92 +32,79 @@ import '../css/main.scss'
 				return '<div>已建立的外部分享連結：<ul></ul></div>'
 			},
 
-			$li(item) {
-				return OCA.FileSubscription.Templates['sidebar-tabview']({ item })
+			$li(share, subscr) {
+				return OCA.FileSubscription.Templates['sidebar-tabview']({ share, subscr })
 			},
 
 		},
 
 		/**
 		 * Renders this details view
-		 *
-		 * @abstract
 		 */
 		render() {
 			this.$el.html(this.template())
-			this._getShareLinks() // 取得已知分享連結
+			this._getInitData()
 
 			// delegate all btn Events
 			this.delegateEvents({
 				'click #mailBtn': '_onSendMailEvent',
-				'change input[name=subscribable]': '_onToggleSubscribable',
+				'change input[name=subscribable]': '_onSubscrSetting',
 			})
 		},
 
 		_shareLinks: null,
-		_renderShareLinksResult(resp) {
+		_renderInitData(obj) {
 
 			const $wrapper = $('.linksWrapper')
 			const templates = this._sectionTemplates
 
-			if (!resp || !resp.ocs.data) $wrapper.html(templates.getLinkFail())
-			else if (resp.ocs.data.length < 1) $wrapper.html(templates.noLink())
+			if (!obj || !obj.data) $wrapper.html(templates.getLinkFail())
+			else if (obj.data.length < 1) $wrapper.html(templates.noLink())
 			else {
 				$wrapper.html(templates.initList())
-				this._shareLinks = resp.ocs.data
-				this._shareLinks.forEach((item, idx) => {
-
-					// 是分享連結
-					if (item.share_type === OC.Share.SHARE_TYPE_LINK) {
-						const li = templates.$li(item)
-						$wrapper.find('ul').append(li)
-						this._getSubscription(item.id)
+				this._shareLinks = obj.data.sharing
+				for (const idx in obj.data) {
+					const row = obj.data[idx]
+					if (!row.subscription) {
+						// 尚未寫入 oc_subscription 的 sharelink 預設值
+						row.subscription = {
+							id: null,
+							share_id: row.sharing.id,
+							emails: null,
+							enabled: 1,
+							message: '',
+							time: null,
+						}
 					}
-
-				})
+					const li = templates.$li(row.sharing, row.subscription)
+					$wrapper.find('ul').append(li)
+				}
 			}
 			$wrapper.show()
 		},
 
 		/**
-		 * 取得 Share links 資料
-		 * @param {OCA.Files.FileInfoModel} fileInfo file info model
+		 * 初始化資料：分享連結+訂閱資訊
 		 */
-		_getShareLinks() {
+		_getInitData() {
 			const file = this.getFileInfo()
 			const path = `${file.attributes.path}/${file.attributes.name}`
 			const fullPath = path.replace('//', '/')
-
-			const url = generateOcsUrl(`apps/files_sharing/api/v1/shares?format=json&path=${encodeURIComponent(fullPath)}`, 2)
 			$.ajax({
 				context: this,
-				url,
-				type: 'GET',
-			}).done(function() {
-				// $(this.$el).find('ul').show()
-			}).fail(function(e) {
-				console.debug('GetShareLinks fail', e)
-			}).always(function(resp) {
-				$(this.$el).find('.loading').hide()
-				this._renderShareLinksResult(resp)
-			})
-		},
-
-		_getSubscription(shareId) {
-			$.ajax({
-				url: OC.generateUrl('/apps/filesubscription/subscribe/' + shareId),
+				url: OC.generateUrl(`/apps/filesubscription?format=json&path=${encodeURIComponent(fullPath)}`),
 				type: 'GET',
 			}).done(function(resp) {
-				$(`li[share-id=${shareId}]`).find('input').attr('checked', Boolean(resp.enabled))
+				this._renderInitData({ data: resp })
 			}).fail(function(e) {
-				console.debug('Get Subscription fail', e)
-				// TODO: 撈不到資料 要預設啟用，但這樣處理怪怪的
-				$(`li[share-id=${shareId}]`).find('input').attr('checked', true)
+				console.debug('Get InitData fail', e)
+				this._renderInitData({ data: null })
+			}).always(function(resp) {
+				$(this.$el).find('.loading').hide()
 			})
 		},
 
 		_onSendMailEvent(e) {
-
 			const i = $(e.target).closest('li').attr('index')
 			const shareLink = this._shareLinks[i].url
 			$.ajax({
@@ -135,30 +122,38 @@ import '../css/main.scss'
 			})
 		},
 
-		// 設定單一連結是否啟用訂閱
-		_onToggleSubscribable(e) {
-			const shareId = $(e.target).closest('li').attr('share-id')
-			const setVal = $(e.target).is(':checked')
+		// 設定變更
+		_onSubscrSetting(e) {
 
-			// const msgEl = $(e.target).closest('.resultMsg')
-			// const msgResponse = {
-			// 	status: '',
-			// 	data: { message: '' }
-			// }
+			const shareId = $(e.target).closest('li').attr('share-id')
+			const $thisLi = $(`li[share-id=${shareId}]`)
+
+			const msgEl = $thisLi.find('.msg')
+			const msgResponse = { status: '', data: { message: '' } }
 
 			$.ajax({
 				context: this,
-				url: OC.generateUrl('/apps/filesubscription/subscribe/state'),
+				url: OC.generateUrl('/apps/filesubscription/update/' + shareId),
 				type: 'POST',
-				data: { shareId, setVal },
-				// beforeSend() {
-				// 	$(e.target).children('input, button').attr('disabled', 'disabled')
-				// 	OC.msg.startAction(msgEl, '設定中...')
-				// }
+				data: {
+					shareId,
+					setVal: {
+						enabled: $(`#subscribable${shareId}`).is(':checked'),
+					}
+				},
+				beforeSend() {
+					$thisLi.children('input, button').attr('disabled', 'disabled')
+					OC.msg.startAction(msgEl, '設定中...')
+				}
 			}).done(function() {
-				// TODO msgResponse // $('.resultMsg')
+				msgResponse.data.message = '設定完成'
+				msgResponse.status = 'success'
 			}).fail(function(e) {
-				console.debug('filesubscription _onToggleSubscribable fail', e)
+				msgResponse.data.message = '設定失敗'
+				console.debug('filesubscription Setting fail', e)
+			}).always(function() {
+				OC.msg.finishedAction(msgEl, msgResponse)
+				$thisLi.children('input, button').removeAttr('disabled')
 			})
 
 		},

@@ -1,0 +1,12 @@
+#fileSubscriptionTabView .msg {
+    color: #000;
+    padding: 3px;
+    &.success {
+        color: #fff;
+        background-color: #47a447;
+    }
+    &.error {
+        color: #fff;
+        background-color: #d2322d;
+    }
+}
