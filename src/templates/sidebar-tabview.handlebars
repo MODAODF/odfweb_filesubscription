@@ -1,12 +1,46 @@
-{{!-- index={{i}} --}}
-<li share-id={{share.id}} >
-    <h5><b>分享連結 {{share.id}} ({{share.label}})</b></h5>
+<div class="item" share-id={{shareId}}>
 
-    <input type="checkbox" class="checkbox" name="subscribable" id="subscribable{{share.id}}" {{#if subscr.enabled }} checked {{/if}}>
-    <label for="subscribable{{share.id}}">開放訂閱</label>
+    <div class="itemEntry">
+        <div class="entryAvatar {{entryAvatarCssClass}} icon icon-public-white"></div>
+        <div class="entryDesc">
+            <h5><b>分享連結{{shareId}}
+                {{#if labelName}} ({{labelName}}){{/if}}
+            </b></h5>
+            <div><span>{{entryEnableString}}訂閱</span> | <span>訂閱人數({{subscriberNum}})</span></div>
+        </div>
+        <button class="entryEdit icon icon-caret-dark"></button>
+    </div>
 
-    <span>{{share.url}}</span>
-    <button id="mailBtn" type="button">SendMail</button>
-    <span class="msg hidden"></span>
+  <ul>
+        <li>
+            <input type="checkbox" class="checkbox" name="subscribable" id="subscribable{{shareId}}" {{#if isEnabled}} checked {{/if}}>
+            <label for="subscribable{{shareId}}">開放訂閱</label>
+            <span class="msg hidden"></span>
+        </li>
 
-</li><hr>
+        <li>
+            <div>
+                <div class="icon icon-edit"></div>
+                <span>文件更新說明</span>
+                <span class="msg hidden"></span>
+            </div>
+            <textarea name="versionDescr" id="versionDescr{{shareId}}" rows="5" wrap="hard">{{message}}</textarea>
+            <div>
+                <em>此修改說明即為訂閱信件之內文。 </em>
+                <button id="detDescr{{shareId}}" type="button">儲存</button>
+            </div>
+        </li>
+
+        <li>
+            <div>
+                <div class="icon icon-mail"></div>
+                <span>訂閱郵件</span>
+                <span class="msg hidden"></span>
+            </div>
+            <button class="mailBtn" type="button">傳送電子郵件({{subscriberNum}})</button>
+            {{#if updateAt}}
+            <div><em>上次寄信於 {{updateAt}}</em></div>
+            {{/if}}
+        </li>
+    </ul>
+</div>

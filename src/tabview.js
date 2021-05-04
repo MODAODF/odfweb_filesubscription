@@ -28,14 +28,29 @@ import '../css/tabview.scss'
 			noLink() {
 				return '<div>沒有分享連結</div>'
 			},
-			initList() {
-				return '<div>已建立的外部分享連結：<ul></ul></div>'
-			},
+			$ul(share, subscr) {
+				const params = {
+					shareId: share.id,
+					labelName: share.label,
+					isEnabled: subscr.enabled, // int
+					entryAvatarCssClass: subscr.enabled ? 'entryAvatarOpen' : 'entryAvatarClose',
+					entryEnableString: subscr.enabled ? '開放' : '關閉',
+					subscriberNum: 0,
+					message: subscr.message
+				}
 
-			$li(share, subscr) {
-				return OCA.FileSubscription.Templates['sidebar-tabview']({ share, subscr })
-			},
+				// TODO, 後端給個數字
+				if (subscr.emails) {
+					params['subscriberNum'] = JSON.parse(subscr.emails).length
+				}
 
+				// TODO, 後端給格式化後的日期格式
+				if (subscr.time) {
+					params['updateAt'] = subscr.time // '2020/00/00 00:00'
+				}
+
+				return OCA.FileSubscription.Templates['sidebar-tabview'](params)
+			},
 		},
 
 		/**
@@ -47,7 +62,8 @@ import '../css/tabview.scss'
 
 			// delegate all btn Events
 			this.delegateEvents({
-				'click #mailBtn': '_onSendMailEvent',
+				'click button.entryEdit': '_onEntryEdit',
+				'click button.mailBtn': '_onSendMailEvent',
 				'change input[name=subscribable]': '_onSubscrSetting',
 			})
 		},
@@ -60,7 +76,6 @@ import '../css/tabview.scss'
 			if (!obj || !obj.data) $wrapper.html(templates.getLinkFail())
 			else if (obj.data.length < 1) $wrapper.html(templates.noLink())
 			else {
-				$wrapper.html(templates.initList())
 				for (const idx in obj.data) {
 					const row = obj.data[idx]
 					if (!row.subscription) {
@@ -74,16 +89,14 @@ import '../css/tabview.scss'
 							time: null,
 						}
 					}
-					const li = templates.$li(row.sharing, row.subscription)
-					$wrapper.find('ul').append(li)
+					const ul = templates.$ul(row.sharing, row.subscription)
+					$wrapper.append(ul)
 				}
 			}
 			$wrapper.show()
 		},
 
-		/**
-		 * 初始化資料：分享連結+訂閱資訊
-		 */
+		// 初始化資料：分享連結+訂閱資訊
 		_getInitData() {
 			const file = this.getFileInfo()
 			const path = `${file.attributes.path}/${file.attributes.name}`
@@ -102,11 +115,22 @@ import '../css/tabview.scss'
 			})
 		},
 
-		_onSendMailEvent(e) {
-			const shareId = $(e.target).closest('li').attr('share-id')
-			const $thisLi = $(`li[share-id=${shareId}]`)
+		// 顯示訂閱編輯欄位
+		_onEntryEdit(e) {
+			const shareId = $(e.target).closest('.item').attr('share-id')
+			$(`.item[share-id=${shareId}] ul`).toggle(500)
+			$(`.item[share-id=${shareId}] .entryEdit`).toggleClass('rotate')
 
-			const msgEl = $thisLi.find('.msg')
+			$(`.item:not([share-id=${shareId}]) ul`).hide(500)
+			$(`.item:not([share-id=${shareId}]) .entryEdit`).removeClass('rotate')
+		},
+
+		// 寄訂閱信件
+		_onSendMailEvent(e) {
+			const shareId = $(e.target).closest('.item').attr('share-id')
+			const $formElements = $(`.item[share-id=${shareId}] ul `).find('button, input, textarea')
+
+			const $msg = $(e.target).closest('li').find('.msg')
 			const msgResponse = { status: '', data: { message: '' } }
 
 			$.ajax({
@@ -114,33 +138,30 @@ import '../css/tabview.scss'
 				type: 'POST',
 				data: { shareId },
 				beforeSend() {
-					$thisLi.children('input, button').attr('disabled', 'disabled')
-					OC.msg.startAction(msgEl, '傳送中...')
+					$formElements.attr('disabled', 'disabled')
+					OC.msg.startAction($msg, '傳送中...')
 				}
 			}).done(function(resp) {
 				msgResponse.status = 'success'
 				msgResponse.data.message = resp.data.message
-				console.debug('SendMail ajax Done', resp)
 			}).fail(function(e) {
 				msgResponse.data.message = '郵件寄送失敗'
 				console.debug('SendMail ajax fail', e)
 			}).always(function() {
-				OC.msg.finishedAction(msgEl, msgResponse)
-				$thisLi.children('input, button').removeAttr('disabled')
+				OC.msg.finishedAction($msg, msgResponse)
+				$formElements.removeAttr('disabled')
 			})
 		},
 
 		// 設定變更
 		_onSubscrSetting(e) {
+			const shareId = $(e.target).closest('.item').attr('share-id')
+			const $formElements = $(`.item[share-id=${shareId}] ul `).find('button, input, textarea')
 
-			const shareId = $(e.target).closest('li').attr('share-id')
-			const $thisLi = $(`li[share-id=${shareId}]`)
-
-			const msgEl = $thisLi.find('.msg')
+			const $msg = $(e.target).closest('li').find('.msg')
 			const msgResponse = { status: '', data: { message: '' } }
 
 			$.ajax({
-				context: this,
 				url: OC.generateUrl('/apps/filesubscription/update/' + shareId),
 				type: 'POST',
 				data: {
@@ -150,8 +171,8 @@ import '../css/tabview.scss'
 					}
 				},
 				beforeSend() {
-					$thisLi.children('input, button').attr('disabled', 'disabled')
-					OC.msg.startAction(msgEl, '設定中...')
+					$formElements.attr('disabled', 'disabled')
+					OC.msg.startAction($msg, '設定中...')
 				}
 			}).done(function() {
 				msgResponse.data.message = '設定完成'
@@ -160,8 +181,8 @@ import '../css/tabview.scss'
 				msgResponse.data.message = '設定失敗'
 				console.debug('filesubscription Setting fail', e)
 			}).always(function() {
-				OC.msg.finishedAction(msgEl, msgResponse)
-				$thisLi.children('input, button').removeAttr('disabled')
+				OC.msg.finishedAction($msg, msgResponse)
+				$formElements.removeAttr('disabled')
 			})
 		},
 
