@@ -28,27 +28,22 @@ import '../css/tabview.scss'
 			noLink() {
 				return '<div>沒有分享連結</div>'
 			},
-			$ul(share, subscr) {
+			$item(id) {
+				return `<div class="item" share-id=${id}></div>`
+			},
+			$itemContent(share, subscr) {
 				const params = {
 					shareId: share.id,
 					labelName: share.label,
 					isEnabled: subscr.enabled, // int
 					entryAvatarCssClass: subscr.enabled ? 'entryAvatarOpen' : 'entryAvatarClose',
 					entryEnableString: subscr.enabled ? '開放' : '關閉',
-					subscriberNum: 0,
-					message: subscr.message
+					message: subscr.message,
+					subscriberNum: subscr.subscriberNum,
 				}
-
-				// TODO, 後端給個數字
-				if (subscr.emails) {
-					params['subscriberNum'] = JSON.parse(subscr.emails).length
+				if (subscr.updateAt) {
+					params['updateAt'] = subscr.updateAt // Y-m-d H:i:s
 				}
-
-				// TODO, 後端給格式化後的日期格式
-				if (subscr.time) {
-					params['updateAt'] = subscr.time // '2020/00/00 00:00'
-				}
-
 				return OCA.FileSubscription.Templates['sidebar-tabview'](params)
 			},
 		},
@@ -66,34 +61,6 @@ import '../css/tabview.scss'
 				'click button.mailBtn': '_onSendMailEvent',
 				'change input[name=subscribable]': '_onSubscrSetting',
 			})
-		},
-
-		_renderInitData(obj) {
-
-			const $wrapper = $('.linksWrapper')
-			const templates = this._sectionTemplates
-
-			if (!obj || !obj.data) $wrapper.html(templates.getLinkFail())
-			else if (obj.data.length < 1) $wrapper.html(templates.noLink())
-			else {
-				for (const idx in obj.data) {
-					const row = obj.data[idx]
-					if (!row.subscription) {
-						// 尚未寫入 oc_subscription 的 sharelink 預設值
-						row.subscription = {
-							id: null,
-							share_id: row.sharing.id,
-							emails: null,
-							enabled: 1,
-							message: '',
-							time: null,
-						}
-					}
-					const ul = templates.$ul(row.sharing, row.subscription)
-					$wrapper.append(ul)
-				}
-			}
-			$wrapper.show()
 		},
 
 		// 初始化資料：分享連結+訂閱資訊
@@ -115,7 +82,54 @@ import '../css/tabview.scss'
 			})
 		},
 
-		// 顯示訂閱編輯欄位
+		_renderInitData(obj) {
+			const $wrapper = $('.linksWrapper')
+			const templates = this._sectionTemplates
+
+			if (!obj || !obj.data) $wrapper.html(templates.getLinkFail())
+			else if (obj.data.length < 1) $wrapper.html(templates.noLink())
+			else {
+				for (const idx in obj.data) {
+					const row = obj.data[idx]
+					if (!row.subscription) {
+						// 尚未寫入 oc_subscription 的 sharelink 預設值
+						row.subscription = {
+							// id: null,
+							share_id: row.sharing.id,
+							enabled: 1,
+							message: '',
+							subscriberNum: 0,
+							updateAt: null,
+						}
+					}
+
+					const itemWrapper = templates.$item(row.sharing.id)
+					$wrapper.append(itemWrapper)
+					const itemContent = templates.$itemContent(row.sharing, row.subscription)
+					$(`.item[share-id=${row.sharing.id}]`).append(itemContent)
+					$(`.item[share-id=${row.sharing.id}] button.entryEdit`).click()
+				}
+			}
+			$wrapper.show()
+		},
+
+		// Rerender 訂閱資訊
+		_rerenderItemData(resp) {
+			const $item = $(`div.item[share-id=${resp.share_id}]`)
+			const share = {
+				id: resp.share_id,
+				label: $item.find('.itemEntry h5 span').text()
+			}
+			const subscr = {
+				enabled: resp.enabled,
+				message: resp.message,
+				subscriberNum: resp.subscriberNum,
+				updateAt: resp.updateAt
+			}
+			$item.html(this._sectionTemplates.$itemContent(share, subscr))
+		},
+
+		// 顯示訂閱設定內容
 		_onEntryEdit(e) {
 			const shareId = $(e.target).closest('.item').attr('share-id')
 			$(`.item[share-id=${shareId}] ul`).toggle(500)
@@ -162,6 +176,7 @@ import '../css/tabview.scss'
 			const msgResponse = { status: '', data: { message: '' } }
 
 			$.ajax({
+				context: this,
 				url: OC.generateUrl('/apps/filesubscription/update/' + shareId),
 				type: 'POST',
 				data: {
@@ -174,9 +189,10 @@ import '../css/tabview.scss'
 					$formElements.attr('disabled', 'disabled')
 					OC.msg.startAction($msg, '設定中...')
 				}
-			}).done(function() {
+			}).done(function(resp) {
 				msgResponse.data.message = '設定完成'
 				msgResponse.status = 'success'
+				this._rerenderItemData(resp)
 			}).fail(function(e) {
 				msgResponse.data.message = '設定失敗'
 				console.debug('filesubscription Setting fail', e)

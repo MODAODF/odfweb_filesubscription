@@ -87,7 +87,7 @@ class SubscribeController extends Controller {
 	 */
 	public function update(int $shareId, $setVal) {
 		$subscription = $this->manager->setSubscription($shareId, $setVal);
-		$result  = $this->renderSubscription($subscription);
+		$result  = $this->formatDataForFE($subscription);
 		return new DataResponse($result);
 	}
 
@@ -106,7 +106,7 @@ class SubscribeController extends Controller {
 		// 		Http::STATUS_FORBIDDEN
 		// 	);
 		$subscription = $this->manager->getSubscription($shareId);
-		$result  = $this->renderSubscription($subscription);
+		$result  = $this->formatDataForFE($subscription);
 		return new DataResponse($result);
 	}
 
@@ -145,7 +145,7 @@ class SubscribeController extends Controller {
 			);
 		}
 		return new JSONResponse(
-			$this->renderSubscription($subscription)
+			$this->formatDataForFE($subscription)
 		);
 	}
 
@@ -178,15 +178,34 @@ class SubscribeController extends Controller {
 	//  */
 	// private function deleteSubscriber(string $token, string $mailAddr) {}
 
-	protected function renderSubscription(Subscription $subscription): array {
+	/**
+	 * 前端需要的資訊
+	 */
+	protected function formatDataForFE(Subscription $subscription): array {
+		// $result = [
+		// 	'id'		=> $subscription->getId(),
+		// 	'share_id'	=> $subscription->getShareId(),
+		// 	'emails'	=> $subscription->getEmails(),
+		// 	'message'	=> $subscription->getParsedMessage(),
+		// 	'time'		=> $subscription->getTime(),
+		// 	'enabled'   => $subscription->getEnabled(),
+		// ];
+
 		$result = [
-			'id'		=> $subscription->getId(),
-			'share_id'	=> $subscription->getShareId(),
-			'emails'	=> $subscription->getEmails(),
-			'message'	=> $subscription->getParsedMessage(),
-			'time'		=> $subscription->getTime(),
-			'enabled'   => $subscription->getEnabled(),
+			'share_id'	    => $subscription->getShareId(),
+			'enabled'       => $subscription->getEnabled(),
+			'message'	    => $subscription->getParsedMessage(),
+			'subscriberNum' => 0,
 		];
+
+		if ($emails = $subscription->getEmails()) {
+			$emailsArr = json_decode($emails, true) ?? array();
+			$result['subscriberNum'] = count($emailsArr);
+		}
+		if ($timeUnix = $subscription->getTime()) {
+			$result['updateAt'] = date('Y-m-d H:i:s',$timeUnix);
+		}
+
 		return $result;
 	}
 
