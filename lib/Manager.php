@@ -50,16 +50,19 @@ class Manager {
 			$subscription = new Subscription();
 			$subscription->setShareId($shareId);
 			// $subscription->setEmails(json_encode(array($mailAddr)));
-			$subscription->setTime($this->timeFactory->getTime());
-			$subscription->setEnabled($setVal['enabled'] === 'true' ? 1:0);
-			$this->subscriptionMapper->insert($subscription);
-			return $subscription;
 		}
 
-		// 已經存在的分享連結
+		$val_enabled = $setVal['enabled'];
+		$val_message = trim($setVal['message']);
+
+		$subscription->setTime($this->timeFactory->getTime());
+		$subscription->setEnabled( $val_enabled === 'true' ? 1:0 );
+		$subscription->setMessage( empty($val_message) ? null : $val_message );
+
+		if ($isNewShareId) {
+			$this->subscriptionMapper->insert($subscription);
+		}
 		if (!$isNewShareId && $subscription instanceof Subscription) {
-			$subscription->setTime($this->timeFactory->getTime());
-			$subscription->setEnabled($setVal['enabled'] === 'true' ? 1 : 0);
 			$this->subscriptionMapper->update($subscription);
 		}
 		return $subscription;

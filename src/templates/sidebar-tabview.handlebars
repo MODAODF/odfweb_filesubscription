@@ -14,6 +14,11 @@
     </div>
 
     <ul>
+
+        {{#if updateAt}}
+        <em>上次更新於 {{updateAt}}</em>
+        {{/if}}
+
         <li>
             <input type="checkbox" class="checkbox" name="subscribable" id="subscribable{{shareId}}" {{#if isEnabled}} checked {{/if}}>
             <label for="subscribable{{shareId}}">開放訂閱</label>
@@ -29,7 +34,7 @@
             <textarea name="versionDescr" id="versionDescr{{shareId}}" rows="5" wrap="hard">{{message}}</textarea>
             <div>
                 <em>此修改說明即為訂閱信件之內文。 </em>
-                <button id="detDescr{{shareId}}" type="button">儲存</button>
+                <button class="setDescr" type="button">儲存</button>
             </div>
         </li>
 
@@ -40,8 +45,5 @@
                 <span class="msg hidden"></span>
             </div>
             <button class="mailBtn" type="button">傳送電子郵件({{subscriberNum}})</button>
-            {{#if updateAt}}
-            <div><em>上次寄信於 {{updateAt}}</em></div>
-            {{/if}}
         </li>
     </ul>

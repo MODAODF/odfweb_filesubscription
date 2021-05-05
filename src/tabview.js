@@ -58,8 +58,9 @@ import '../css/tabview.scss'
 			// delegate all btn Events
 			this.delegateEvents({
 				'click button.entryEdit': '_onEntryEdit',
-				'click button.mailBtn': '_onSendMailEvent',
 				'change input[name=subscribable]': '_onSubscrSetting',
+				'click button.setDescr': '_onSubscrSetting',
+				'click button.mailBtn': '_onSendMailEvent',
 			})
 		},
 
@@ -183,6 +184,7 @@ import '../css/tabview.scss'
 					shareId,
 					setVal: {
 						enabled: $(`#subscribable${shareId}`).is(':checked'),
+						message: $(`#versionDescr${shareId}`).val()
 					}
 				},
 				beforeSend() {
@@ -190,8 +192,8 @@ import '../css/tabview.scss'
 					OC.msg.startAction($msg, '設定中...')
 				}
 			}).done(function(resp) {
-				msgResponse.data.message = '設定完成'
-				msgResponse.status = 'success'
+				// msgResponse.data.message = '設定完成'
+				// msgResponse.status = 'success'
 				this._rerenderItemData(resp)
 			}).fail(function(e) {
 				msgResponse.data.message = '設定失敗'

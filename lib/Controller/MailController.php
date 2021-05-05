@@ -63,7 +63,7 @@ class MailController extends Controller {
 			throw new SubscriptionDoesNotExistException();
 		}
 
-		$template = $this->mailTemplate($shareId, $subscription->getMessage());
+		$template = $this->mailTemplate($shareId, $subscription);
 
 		// Send mail
         $emailArr = \json_decode($subscription->getEmails());
@@ -115,7 +115,7 @@ class MailController extends Controller {
 	 * EMail 模板
 	 * @return IEMailTemplate
 	 */
-	private function mailTemplate($shareId, $msg):IEMailTemplate {
+	private function mailTemplate($shareId, $subscription):IEMailTemplate {
 
 		$ocDefaults = new \OC_Defaults;
 		$serverName = $this->config->getAppValue('theming', 'name', $ocDefaults->getTitle());
@@ -124,8 +124,15 @@ class MailController extends Controller {
 		$template->setSubject("[$serverName] 文件訂閱通知");
 		$template->addHeader();
 		$template->addHeading('文件訂閱通知'.' ('.$shareId.')');
-		$body = $msg ?? '您訂閱的文件已發布新版本。';
-		$template->addBodyText($body, $body);
+
+		$plainText = $subscription->getMessage();
+		if (!$plainText || empty($plainText)) {
+			$template->addBodyText('您訂閱的文件已發布新版本。');
+		} else {
+			$text = $subscription->getParsedMessage();
+			$template->addBodyText($text, $plainText);
+		}
+
 		if($shareLink = $this->getShareLink($shareId) ?? false) {
 			$template->addBodyButton($this->l10n->t('Open File'), $shareLink);
 		}

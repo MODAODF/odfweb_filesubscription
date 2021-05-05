@@ -194,7 +194,7 @@ class SubscribeController extends Controller {
 		$result = [
 			'share_id'	    => $subscription->getShareId(),
 			'enabled'       => $subscription->getEnabled(),
-			'message'	    => $subscription->getParsedMessage(),
+			'message'	    => $subscription->getMessage(), // $subscription->getParsedMessage()
 			'subscriberNum' => 0,
 		];
 
