@@ -11,6 +11,7 @@ use OCP\Util;
 use OCA\FileSubscription\Listener\LoadSidebarScripts;
 use OCP\EventDispatcher\IEventDispatcher;
 // use OCA\Files\Event\LoadAdditionalScriptsEvent;
+use OCA\FileSubscription\ShareHooks;
 
 class Application extends App implements IBootstrap {
 	public const APP_ID = 'filesubscription';
@@ -30,7 +31,7 @@ class Application extends App implements IBootstrap {
 			\OCP\Util::addScript(self::APP_ID, 'dist/sharedfile');
 			\OCP\Util::addScript(self::APP_ID, 'templates');
 		});
-
+		$dispatcher->addListener('OCP\Share::preUnshare', [ShareHooks::class, 'unShare']);
 	}
 
 	public function boot(IBootContext $context): void {
