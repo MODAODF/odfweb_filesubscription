@@ -54,13 +54,19 @@ class MailController extends Controller {
 	 * @param int $shareId
 	 * @param string $shareLink URL of shared file
 	 * @throws \Exception If mail could not be sent
+	 * @NoAdminRequired
 	 */
 	public function sendMail($shareId) {
 
 		try {
 			$subscription = $this->manager->getSubscription($shareId);
-		} catch (DoesNotExistException $e) {
-			throw new SubscriptionDoesNotExistException();
+		} catch (SubscriptionDoesNotExistException $e) {
+			return new DataResponse([
+				'data' => [
+					'message' => $this->l10n->t('沒有訂閱者'),
+				],
+				'result' => false
+			], Http::STATUS_BAD_REQUEST);
 		}
 
 		$template = $this->mailTemplate($shareId, $subscription);

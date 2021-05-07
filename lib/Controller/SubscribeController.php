@@ -54,6 +54,7 @@ class SubscribeController extends Controller {
 
 	/**
 	 * 取得 分享連結和訂閱資訊（側邊攔初始化資料）
+	 * @NoAdminRequired
 	 */
 	public function index(string $path) {
 
@@ -83,7 +84,7 @@ class SubscribeController extends Controller {
 	/**
 	 * 取得 分享連結和訂閱資訊（側邊攔初始化資料）
 	 * @param int $shareId
-	 *
+	 * @NoAdminRequired
 	 */
 	public function update(int $shareId, $setVal) {
 		$subscription = $this->manager->setSubscription($shareId, $setVal);
@@ -92,12 +93,10 @@ class SubscribeController extends Controller {
 	}
 
 	/**
-	 * 取得單一分享連結的訂閱Emails  @AdminRequired
+	 * 取得單一分享連結的訂閱Emails
 	 * @NoAdminRequired
-	 * @PublicPage
-	 *
 	 */
-	public function getSubscription($shareId) {
+	private function getSubscription($shareId) {
 
 		// TODO: 只有admin可以讀取訂閱者資料
 		// if (!$this->manager->checkIsAdmin()) {
