@@ -22,9 +22,7 @@ class Manager {
 	/** @var ITimeFactory */
 	protected $timeFactory;
 
-	public function __construct(IConfig $config,
-								SubscriptionMapper $subscriptionMapper,
-								ITimeFactory $timeFactory) {
+	public function __construct(IConfig $config, SubscriptionMapper $subscriptionMapper, ITimeFactory $timeFactory) {
 		$this->config = $config;
 		$this->subscriptionMapper = $subscriptionMapper;
 		$this->timeFactory = $timeFactory;
@@ -45,19 +43,27 @@ class Manager {
 			$isNewShareId = true;
 		}
 
-		// 新的分享連結
 		if ($isNewShareId) {
 			$subscription = new Subscription();
 			$subscription->setShareId($shareId);
-			// $subscription->setEmails(json_encode(array($mailAddr)));
 		}
 
-		$val_enabled = $setVal['enabled'];
-		$val_message = trim($setVal['message']);
+		if ($val_enabled = $setVal['enabled']) {
+			$subscription->setEnabled( $val_enabled === 'true' ? 1:0 );
+		}
 
-		$subscription->setTime($this->timeFactory->getTime());
-		$subscription->setEnabled( $val_enabled === 'true' ? 1:0 );
-		$subscription->setMessage( empty($val_message) ? null : $val_message );
+		if (isset($setVal['message'])) {
+			$val_message = trim($setVal['message']);
+			$subscription->setMessage( empty($val_message) ? null : $val_message );
+		}
+
+		if ($setVal['updateMessageTime']) {
+			$subscription->setLastMessageTime($this->timeFactory->getTime());
+		}
+
+		if ($setVal['updateEmailTime']) {
+			$subscription->setLastEmailTime($this->timeFactory->getTime());
+		}
 
 		if ($isNewShareId) {
 			$this->subscriptionMapper->insert($subscription);
@@ -126,8 +132,6 @@ class Manager {
 			$subscription = new Subscription();
 			$subscription->setShareId($shareId);
 			$subscription->setEmails(json_encode(array($mailAddr)));
-			$subscription->setTime($this->timeFactory->getTime());
-			// $subscription->setEnabled(1);
 			$this->subscriptionMapper->insert($subscription);
 			return $subscription;
 		}
@@ -139,7 +143,6 @@ class Manager {
 			array_push($db_emailsArr, $mailAddr);
 
 			$subscription->setEmails(json_encode($db_emailsArr));
-			$subscription->setTime($this->timeFactory->getTime());
 			$this->subscriptionMapper->update($subscription);
 		}
 		return $subscription;

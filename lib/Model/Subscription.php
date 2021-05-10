@@ -16,7 +16,10 @@ class Subscription extends Entity {
 	protected $message;
 
 	/** @var int */
-	protected $time;
+	protected $lastMessageTime;
+
+	/** @var int */
+	protected $lastEmailTime;
 
 	/** @var int */
 	protected $enabled;
@@ -25,7 +28,8 @@ class Subscription extends Entity {
 		$this->addType('shareId', 'int');
 		$this->addType('emails', 'string');
 		$this->addType('message', 'string');
-		$this->addType('time', 'int');
+		$this->addType('lastMessageTime', 'int');
+		$this->addType('lastEmailTime', 'int');
 		$this->addType('enabled', 'int');
 	}
 

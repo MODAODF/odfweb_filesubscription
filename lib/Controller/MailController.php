@@ -98,11 +98,15 @@ class MailController extends Controller {
 			if($infos['result']) $sentCount ++;
 		}
 
+		$setVal['updateEmailTime'] = true;
+		$subscription = $this->manager->setSubscription($shareId, $setVal);
+
 		// if ($sentCount > 0) {
 		return new DataResponse([
 			'data' => [
 				'message' => $this->l10n->t('%s email sent.', [$sentCount]),
-				'infos' => $sendInfos
+				'infos' => $sendInfos,
+				'lastEmailTime' => date('Y-m-d H:i:s', $subscription->getLastEmailTime()),
 			],
 			'result' => true
 		], Http::STATUS_OK);

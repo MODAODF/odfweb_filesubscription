@@ -41,8 +41,12 @@ import '../css/tabview.scss'
 					message: subscr.message,
 					subscriberNum: subscr.subscriberNum,
 				}
-				if (subscr.updateAt) {
-					params['updateAt'] = subscr.updateAt // Y-m-d H:i:s
+
+				if (subscr.last_message_time) {
+					params['lastMessageTime'] = subscr.last_message_time // Y-m-d H:i:s
+				}
+				if (subscr.last_email_time) {
+					params['lastEmailTime'] = subscr.last_email_time // Y-m-d H:i:s
 				}
 				return OCA.FileSubscription.Templates['sidebar-tabview'](params)
 			},
@@ -100,7 +104,8 @@ import '../css/tabview.scss'
 							enabled: 1,
 							message: '',
 							subscriberNum: 0,
-							updateAt: null,
+							last_message_time: null,
+							last_email_time: null,
 						}
 					}
 
@@ -125,7 +130,8 @@ import '../css/tabview.scss'
 				enabled: resp.enabled,
 				message: resp.message,
 				subscriberNum: resp.subscriberNum,
-				updateAt: resp.updateAt
+				last_message_time: resp.last_message_time,
+				last_email_time: resp.last_email_time,
 			}
 			$item.html(this._sectionTemplates.$itemContent(share, subscr))
 		},
@@ -159,6 +165,7 @@ import '../css/tabview.scss'
 			}).done(function(resp) {
 				msgResponse.status = 'success'
 				msgResponse.data.message = resp.data.message
+				$('.mailBtn ~ .lasttime span').text(resp.data.lastEmailTime)
 			}).fail(function(e) {
 				msgResponse.data.message = '郵件寄送失敗'
 				console.debug('SendMail ajax fail', e)
@@ -171,8 +178,13 @@ import '../css/tabview.scss'
 		// 設定變更
 		_onSubscrSetting(e) {
 			const shareId = $(e.target).closest('.item').attr('share-id')
-			const $formElements = $(`.item[share-id=${shareId}] ul `).find('button, input, textarea')
+			const setVal = {
+				enabled: $(`#subscribable${shareId}`).is(':checked'),
+				message: $(`#versionDescr${shareId}`).val(),
+				updateMessageTime: $(e.target).hasClass('setDescr'),
+			}
 
+			const $formElements = $(`.item[share-id=${shareId}] ul `).find('button, input, textarea')
 			const $msg = $(e.target).closest('li').find('.msg')
 			const msgResponse = { status: '', data: { message: '' } }
 
@@ -180,13 +192,7 @@ import '../css/tabview.scss'
 				context: this,
 				url: OC.generateUrl('/apps/filesubscription/update/' + shareId),
 				type: 'POST',
-				data: {
-					shareId,
-					setVal: {
-						enabled: $(`#subscribable${shareId}`).is(':checked'),
-						message: $(`#versionDescr${shareId}`).val()
-					}
-				},
+				data: { shareId, setVal },
 				beforeSend() {
 					$formElements.attr('disabled', 'disabled')
 					OC.msg.startAction($msg, '設定中...')

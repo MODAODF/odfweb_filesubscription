@@ -50,7 +50,11 @@ class Version1000Date20210416134634 extends SimpleMigrationStep {
 				'notnull' => false,
 				'default' => '',
 			]);
-			$table->addColumn('time', Types::INTEGER, [
+			$table->addColumn('last_message_time', Types::INTEGER, [
+				'notnull' => false,
+				'length' => 4,
+			]);
+			$table->addColumn('last_email_time', Types::INTEGER, [
 				'notnull' => false,
 				'length' => 4,
 			]);

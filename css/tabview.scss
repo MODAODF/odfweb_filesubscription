@@ -18,6 +18,9 @@
             background-color: #d2322d;
         }
     }
+    .lasttime {
+        font-size: 13px;
+    }
 
     .itemEntry {
         display: flex;
@@ -81,7 +84,16 @@
             width: 100%;
             resize: vertical;
             max-height: 400px;
-        }
+            & ~ div {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                .setDescr {
+                    justify-self: flex-end;
+                    margin-left: auto;
+                }
+            }
 
+        }
     }
 }

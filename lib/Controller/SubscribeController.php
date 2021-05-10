@@ -76,7 +76,6 @@ class SubscribeController extends Controller {
 				$initData[$idx]['sharing'] = $share;
 				$initData[$idx]['subscription'] = $subscriptionData;
 			}
-
 		}
 		return new DataResponse($initData);
 	}
@@ -186,7 +185,8 @@ class SubscribeController extends Controller {
 		// 	'share_id'	=> $subscription->getShareId(),
 		// 	'emails'	=> $subscription->getEmails(),
 		// 	'message'	=> $subscription->getParsedMessage(),
-		// 	'time'		=> $subscription->getTime(),
+		// 	'last_message_time'		=> $subscription->getLastMessageTime(),
+		// 	'last_email_time'		=> $subscription->getLastEmailTime(),
 		// 	'enabled'   => $subscription->getEnabled(),
 		// ];
 
@@ -201,8 +201,11 @@ class SubscribeController extends Controller {
 			$emailsArr = json_decode($emails, true) ?? array();
 			$result['subscriberNum'] = count($emailsArr);
 		}
-		if ($timeUnix = $subscription->getTime()) {
-			$result['updateAt'] = date('Y-m-d H:i:s',$timeUnix);
+		if ($lastMessageTime = $subscription->getLastMessageTime()) {
+			$result['last_message_time'] = date('Y-m-d H:i:s', $lastMessageTime);
+		}
+		if ($lastEmailTime = $subscription->getLastEmailTime()) {
+			$result['last_email_time'] = date('Y-m-d H:i:s', $lastEmailTime);
 		}
 
 		return $result;
