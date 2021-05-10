@@ -6,18 +6,17 @@ use OCP\Defaults;
 use OCP\IConfig;
 use OCP\IUser;
 use OCP\AppFramework\Controller;
+use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\NotFoundResponse;
+use OCP\AppFramework\Db\DoesNotExistException;
+use OCP\AppFramework\Utility\ITimeFactory;
 use OCA\FileSubscription\Manager;
 use OCA\FileSubscription\Model\Subscription;
-use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Share\IShare;
 use OCP\Share\IManager as ShareManager;
-use OCP\Files\NotFoundException;
-use OCA\FileSubscription\Model\SubscriptionDoesNotExistException;
-use OCP\AppFramework\Db\DoesNotExistException;
-
+use OCP\Share\Exceptions\ShareNotFound;
 
 class SubscribeController extends Controller {
 
@@ -116,7 +115,11 @@ class SubscribeController extends Controller {
 	 * @param string $token
 	 */
 	public function getState(string $token) {
-		$shareId = $this->getShareId($token);
+		try {
+			$shareId = $this->shareManager->getShareByToken($token)->getId();
+		} catch (ShareNotFound $e) {
+			return new JSONResponse([], Http::STATUS_NOT_FOUND);
+		}
 		$status = $this->manager->getEnabled($shareId);
 		return new JSONResponse($status);
 	}
@@ -133,34 +136,17 @@ class SubscribeController extends Controller {
 	 *
 	 */
 	public function addSubscriber(string $token, string $mailAddr) {
-		$shareId = $this->getShareId($token);
-		try {
-			$subscription = $this->manager->setMail($shareId, $mailAddr);
-		} catch (\InvalidArgumentException $e) {
-			return new JSONResponse(
-				['error' => $e],
-				Http::STATUS_BAD_REQUEST
-			);
-		}
-		return new JSONResponse(
-			$this->formatDataForFE($subscription)
-		);
-	}
-
-	/**
-	 *  用 share token 取得 shareId
-	 * @param string $token
-	 */
-	private function getShareId(string $token) {
 		try {
 			$shareId = $this->shareManager->getShareByToken($token)->getId();
-		} catch (\Exception $e) {
-			return new JSONResponse(
-				['error' => 'fail to get ShareId By Token' . $e],
-				Http::STATUS_BAD_REQUEST
-			);
+		} catch (ShareNotFound $e) {
+			return new JSONResponse([$e->getMessage()], Http::STATUS_NOT_FOUND);
 		}
-		return $shareId;
+
+		try {
+			$subscription = $this->manager->setMail($shareId, $mailAddr);
+		} catch (\Exception $e) {
+			return new DataResponse([$e->getMessage()], Http::STATUS_UNPROCESSABLE_ENTITY);
+		}
 	}
 
 	// /**

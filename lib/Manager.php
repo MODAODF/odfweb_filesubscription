@@ -110,14 +110,15 @@ class Manager {
 	 * @param int $shareId
 	 * @param string $mailAddr
 	 * @return Subscription
-	 * @throws \InvalidArgumentException when the subject is empty or invalid
+	 * @throws \Exception
 	 */
 	public function setMail(int $shareId, string $mailAddr): Subscription {
 		$mailAddr = trim($mailAddr);
 
-		// TODO: 檢查 mailAddr 字串
-		if (!$this->checkMailAddr($mailAddr)) {
-			// throw new \InvalidArgumentException('Invalid mail address', 1);
+		$mailer = \OC::$server->getMailer();
+		$validMail = $mailer->validateMailAddress($mailAddr);
+		if (!empty($mailAddr) && !$validMail) {
+			throw new \Exception('Invalid mail address');
 		}
 
 		try {
@@ -133,24 +134,20 @@ class Manager {
 			$subscription->setShareId($shareId);
 			$subscription->setEmails(json_encode(array($mailAddr)));
 			$this->subscriptionMapper->insert($subscription);
-			return $subscription;
 		}
 
 		// 已經存在的分享連結
 		if (!$isNewShareId && $subscription instanceof Subscription) {
 			$db_emailsStr = $subscription->getEmails();
 			$db_emailsArr = \json_decode($db_emailsStr) ?? array();
-			array_push($db_emailsArr, $mailAddr);
 
-			$subscription->setEmails(json_encode($db_emailsArr));
-			$this->subscriptionMapper->update($subscription);
+			if (!in_array($mailAddr, $db_emailsArr)) {
+				array_push($db_emailsArr, $mailAddr);
+				$subscription->setEmails(\json_encode($db_emailsArr));
+				$this->subscriptionMapper->update($subscription);
+			}
 		}
 		return $subscription;
-	}
-
-	// TODO
-	private function checkMailAddr($mailAddr) {
-		return true;
 	}
 
 }
