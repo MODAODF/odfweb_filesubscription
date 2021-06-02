@@ -50,7 +50,7 @@
             border: none;
             margin-left: auto;
             transition: all .05s ease-in-out;
-            &:hover { background-color: lightgrey; }
+            &:enabled:hover { background-color: lightgrey; }
             &.rotate {
                 transform: rotate(180deg);
             }

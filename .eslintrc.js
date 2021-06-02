@@ -23,5 +23,6 @@ module.exports = {
 		'no-console': ['error', { allow: ['error', 'warn', 'debug'] }],
 		'no-tabs': 0,
 		'dot-notation': 'off',
+        'eqeqeq': 'off'
 	}
 };

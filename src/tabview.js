@@ -43,10 +43,13 @@ import '../css/tabview.scss'
 				}
 
 				if (subscr.last_message_time) {
-					params['lastMessageTime'] = subscr.last_message_time // Y-m-d H:i:s
+					params['lastMessageTime'] = subscr.last_message_time // Y-m-d H:i
 				}
 				if (subscr.last_email_time) {
-					params['lastEmailTime'] = subscr.last_email_time // Y-m-d H:i:s
+					params['lastEmailTime'] = subscr.last_email_time // Y-m-d H:i
+				}
+				if (subscr.last_cancel_time) {
+					params['lastCancelTime'] = subscr.last_cancel_time // Y-m-d H:i
 				}
 				return OCA.FileSubscription.Templates['sidebar-tabview'](params)
 			},
@@ -64,7 +67,8 @@ import '../css/tabview.scss'
 				'click button.entryEdit': '_onEntryEdit',
 				'change input[name=subscribable]': '_onSubscrSetting',
 				'click button.setDescr': '_onSubscrSetting',
-				'click button.mailBtn': '_onSendMailEvent',
+				'click button.sendSubscrMail': '_onSendMailEvent',
+				'click button.cancelSubscr': '_onCancelEvent',
 			})
 		},
 
@@ -77,6 +81,10 @@ import '../css/tabview.scss'
 				context: this,
 				url: OC.generateUrl(`/apps/filesubscription?format=json&path=${encodeURIComponent(fullPath)}`),
 				type: 'GET',
+				beforeSend() {
+					$('.linksWrapper').hide()
+					$(this.$el).find('.loading').show()
+				}
 			}).done(function(resp) {
 				this._renderInitData({ data: resp })
 			}).fail(function(e) {
@@ -89,6 +97,8 @@ import '../css/tabview.scss'
 
 		_renderInitData(obj) {
 			const $wrapper = $('.linksWrapper')
+			$('.linksWrapper').children().remove()
+
 			const templates = this._sectionTemplates
 
 			if (!obj || !obj.data) $wrapper.html(templates.getLinkFail())
@@ -106,14 +116,22 @@ import '../css/tabview.scss'
 							subscriberNum: 0,
 							last_message_time: null,
 							last_email_time: null,
+							last_cancel_time: null,
 						}
 					}
 
 					const itemWrapper = templates.$item(row.sharing.id)
-					$wrapper.append(itemWrapper)
 					const itemContent = templates.$itemContent(row.sharing, row.subscription)
-					$(`.item[share-id=${row.sharing.id}]`).append(itemContent)
-					$(`.item[share-id=${row.sharing.id}] button.entryEdit`).click()
+					const selector = `.item[share-id=${row.sharing.id}]`
+
+					// 避免重複 render
+					if ($(selector).length === 0) {
+						$wrapper.append(itemWrapper)
+					}
+					if ($(selector).children().length === 0) {
+						$(selector).append(itemContent)
+						$(selector).find('button.entryEdit').click()
+					}
 				}
 			}
 			$wrapper.show()
@@ -132,6 +150,7 @@ import '../css/tabview.scss'
 				subscriberNum: resp.subscriberNum,
 				last_message_time: resp.last_message_time,
 				last_email_time: resp.last_email_time,
+				last_cancel_time: resp.last_cancel_time,
 			}
 			$item.html(this._sectionTemplates.$itemContent(share, subscr))
 		},
@@ -149,13 +168,13 @@ import '../css/tabview.scss'
 		// 寄訂閱信件
 		_onSendMailEvent(e) {
 			const shareId = $(e.target).closest('.item').attr('share-id')
-			const $formElements = $(`.item[share-id=${shareId}] ul `).find('button, input, textarea')
+			const $formElements = $('.item[share-id]').find('button, input, textarea')
 
 			const $msg = $(e.target).closest('li').find('.msg')
 			const msgResponse = { status: '', data: { message: '' } }
 
 			$.ajax({
-				url: OC.generateUrl('/apps/filesubscription/mail'),
+				url: OC.generateUrl('/apps/filesubscription/mail/update'),
 				type: 'POST',
 				data: { shareId },
 				beforeSend() {
@@ -165,7 +184,12 @@ import '../css/tabview.scss'
 			}).done(function(resp) {
 				msgResponse.status = 'success'
 				msgResponse.data.message = resp.data.message
-				$('.mailBtn ~ .lasttime span').text(resp.data.lastEmailTime)
+				const $timeDiv = $(`.item[share-id=${shareId}]`).find('.sendSubscrMail ~ .lasttime')
+				if ($timeDiv.find('em').length > 0) {
+					$timeDiv.find('em > span').text(resp.data.lastEmailTime)
+				} else {
+					$timeDiv.append(`<em>上次傳送於 <span>${resp.data.lastEmailTime}</span></em>`)
+				}
 			}).fail(function(e) {
 				msgResponse.data.message = '郵件寄送失敗'
 				console.debug('SendMail ajax fail', e)
@@ -184,7 +208,7 @@ import '../css/tabview.scss'
 				updateMessageTime: $(e.target).hasClass('setDescr'),
 			}
 
-			const $formElements = $(`.item[share-id=${shareId}] ul `).find('button, input, textarea')
+			const $formElements = $('.item[share-id]').find('button, input, textarea')
 			const $msg = $(e.target).closest('li').find('.msg')
 			const msgResponse = { status: '', data: { message: '' } }
 
@@ -198,8 +222,6 @@ import '../css/tabview.scss'
 					OC.msg.startAction($msg, '設定中...')
 				}
 			}).done(function(resp) {
-				// msgResponse.data.message = '設定完成'
-				// msgResponse.status = 'success'
 				this._rerenderItemData(resp)
 			}).fail(function(e) {
 				msgResponse.data.message = '設定失敗'
@@ -208,6 +230,48 @@ import '../css/tabview.scss'
 				OC.msg.finishedAction($msg, msgResponse)
 				$formElements.removeAttr('disabled')
 			})
+		},
+
+		// 取消訂閱
+		_onCancelEvent(e) {
+			const $formElements = $('.item[share-id]').find('button, input, textarea')
+			$formElements.attr('disabled', 'disabled')
+			const self = this
+			const confirmed = function(confirm) {
+				if (!confirm) {
+					$formElements.removeAttr('disabled')
+					return
+				}
+
+				const $msg = $(e.target).closest('li').find('.msg')
+				const msgResponse = { status: '', data: { message: '' } }
+
+				$.ajax({
+					context: self,
+					url: OC.generateUrl('/apps/filesubscription/cancel'),
+					type: 'POST',
+					data: {
+						shareId: $(e.target).closest('.item').attr('share-id'),
+					},
+					beforeSend() {
+						OC.msg.startAction($msg, '取消中...')
+					}
+				}).done(function(resp) {
+					self._rerenderItemData(resp)
+				}).fail(function(resp) {
+					msgResponse.data.message = '無法取消訂閱'
+					if (typeof resp.responseJSON.message != 'undefined') {
+						msgResponse.data.message += ': '
+						msgResponse.data.message += resp.responseJSON.message
+					}
+					console.debug('Cancel ajax fail', resp)
+				}).always(function() {
+					OC.msg.finishedAction($msg, msgResponse)
+					$formElements.removeAttr('disabled')
+				})
+			}
+
+			OC.dialogs.confirm('系統將發送取消通知給訂閱者，並移除所有訂閱者', '確定清除訂閱？', confirmed)
 		},
 
 	})

@@ -57,12 +57,20 @@ class Manager {
 			$subscription->setMessage( empty($val_message) ? null : $val_message );
 		}
 
+		if (isset($setVal['emails']) && $setVal['emails'] === 'cancel') {
+			$subscription->setEmails(null); // 取消訂閱
+		}
+
 		if ($setVal['updateMessageTime']) {
 			$subscription->setLastMessageTime($this->timeFactory->getTime());
 		}
 
 		if ($setVal['updateEmailTime']) {
 			$subscription->setLastEmailTime($this->timeFactory->getTime());
+		}
+
+		if ($setVal['cancelTime']) {
+			$subscription->setLastCancelTime($this->timeFactory->getTime());
 		}
 
 		if ($isNewShareId) {

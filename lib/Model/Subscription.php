@@ -22,6 +22,9 @@ class Subscription extends Entity {
 	protected $lastEmailTime;
 
 	/** @var int */
+	protected $lastCancelTime;
+
+	/** @var int */
 	protected $enabled;
 
 	public function __construct() {
@@ -30,6 +33,7 @@ class Subscription extends Entity {
 		$this->addType('message', 'string');
 		$this->addType('lastMessageTime', 'int');
 		$this->addType('lastEmailTime', 'int');
+		$this->addType('lastCancelTime', 'int');
 		$this->addType('enabled', 'int');
 	}
 

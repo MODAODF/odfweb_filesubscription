@@ -80,12 +80,53 @@ class SubscribeController extends Controller {
 	}
 
 	/**
-	 * 取得 分享連結和訂閱資訊（側邊攔初始化資料）
+	 * 更新訂閱資訊
 	 * @param int $shareId
 	 * @NoAdminRequired
 	 */
 	public function update(int $shareId, $setVal) {
 		$subscription = $this->manager->setSubscription($shareId, $setVal);
+		$result  = $this->formatDataForFE($subscription);
+		return new DataResponse($result);
+	}
+
+	/**
+	 * 取消訂閱
+	 * @param int $shareId
+	 * @return DataResponse
+	 * @NoAdminRequired
+	 */
+	public function cancel(int $shareId) {
+		$subscription = $this->manager->getSubscription($shareId);
+		if(count(\json_decode($subscription->getEmails())) < 1) {
+			return new DataResponse(
+				['message' => '沒有訂閱者'],
+				Http::STATUS_OK
+			);
+		};
+
+		// 取得分享連結 -> 確認操作者的身份
+		$uid = \OC::$server->getUserSession()->getUser()->getUID();
+		$share = $this->shareApi->getShare((string) $shareId); // DataResponse
+		$shareData = $share->getData();
+		$canAccess = $shareData[0]['uid_owner'] === $uid || $shareData[0]['uid_initiator'] === $uid;
+		if (!$canAccess) {
+			return new DataResponse(
+				['message' => '無操作權限'], // user must be share owner or initiator
+				Http::STATUS_FORBIDDEN
+			);
+		}
+
+		// 寄信給所有訂閱者
+		// TODO: 目前不管信有沒有寄成功
+		$mailController = \OC::$server->query('OCA\FileSubscription\Controller\MailController');
+		$mail_dataResp = $mailController->cancelMail($shareId); //DataResponse
+
+		// DB 刪除eamils、更新cancelTime
+		$setVal['emails'] = 'cancel';
+		$setVal['cancelTime']= true;
+		$subscription = $this->manager->setSubscription($shareId, $setVal);
+
 		$result  = $this->formatDataForFE($subscription);
 		return new DataResponse($result);
 	}
@@ -118,10 +159,10 @@ class SubscribeController extends Controller {
 		try {
 			$shareId = $this->shareManager->getShareByToken($token)->getId();
 		} catch (ShareNotFound $e) {
-			return new JSONResponse([], Http::STATUS_NOT_FOUND);
+			return new DataResponse([], Http::STATUS_NOT_FOUND);
 		}
 		$status = $this->manager->getEnabled($shareId);
-		return new JSONResponse($status);
+		return new DataResponse($status);
 	}
 
 	/**
@@ -139,7 +180,7 @@ class SubscribeController extends Controller {
 		try {
 			$shareId = $this->shareManager->getShareByToken($token)->getId();
 		} catch (ShareNotFound $e) {
-			return new JSONResponse([$e->getMessage()], Http::STATUS_NOT_FOUND);
+			return new DataResponse([$e->getMessage()], Http::STATUS_NOT_FOUND);
 		}
 
 		try {
@@ -148,19 +189,6 @@ class SubscribeController extends Controller {
 			return new DataResponse([$e->getMessage()], Http::STATUS_UNPROCESSABLE_ENTITY);
 		}
 	}
-
-	// /**
-	//  * 取消訂閱 Email
-	//  *
-	//  * @NoAdminRequired
-	//  * @NoCSRFRequired
-	//  * @PublicPage
-	//  *
-	//  * @param string $token
-	//  * @param string $mailAddr
-	//  *
-	//  */
-	// private function deleteSubscriber(string $token, string $mailAddr) {}
 
 	/**
 	 * 前端需要的資訊
@@ -188,10 +216,13 @@ class SubscribeController extends Controller {
 			$result['subscriberNum'] = count($emailsArr);
 		}
 		if ($lastMessageTime = $subscription->getLastMessageTime()) {
-			$result['last_message_time'] = date('Y-m-d H:i:s', $lastMessageTime);
+			$result['last_message_time'] = date('Y-m-d H:i', $lastMessageTime);
 		}
 		if ($lastEmailTime = $subscription->getLastEmailTime()) {
-			$result['last_email_time'] = date('Y-m-d H:i:s', $lastEmailTime);
+			$result['last_email_time'] = date('Y-m-d H:i', $lastEmailTime);
+		}
+		if ($lastCancelTime = $subscription->getLastCancelTime()) {
+			$result['last_cancel_time'] = date('Y-m-d H:i', $lastCancelTime);
 		}
 
 		return $result;
