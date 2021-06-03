@@ -120,9 +120,8 @@ class Manager {
 	 * @return Subscription
 	 * @throws \Exception
 	 */
-	public function setMail(int $shareId, string $mailAddr): Subscription {
+	public function addIntoEmails(int $shareId, string $mailAddr): Subscription {
 		$mailAddr = trim($mailAddr);
-
 		$mailer = \OC::$server->getMailer();
 		$validMail = $mailer->validateMailAddress($mailAddr);
 		if (!empty($mailAddr) && !$validMail) {
@@ -148,14 +147,47 @@ class Manager {
 		if (!$isNewShareId && $subscription instanceof Subscription) {
 			$db_emailsStr = $subscription->getEmails();
 			$db_emailsArr = \json_decode($db_emailsStr) ?? array();
-
 			if (!in_array($mailAddr, $db_emailsArr)) {
 				array_push($db_emailsArr, $mailAddr);
-				$subscription->setEmails(\json_encode($db_emailsArr));
+				$subscription->setEmails(\json_encode(array_values($db_emailsArr)));
 				$this->subscriptionMapper->update($subscription);
 			}
 		}
 		return $subscription;
+	}
+
+	/**
+	 * 取消訂閱者
+	 * @param int $shareId
+	 * @param string $mailAddr
+	 * @throws \Exception
+	 */
+	public function rmFromEmails(int $shareId, string $mailAddr) {
+		$mailAddr = trim($mailAddr);
+		$mailer = \OC::$server->getMailer();
+		$validMail = $mailer->validateMailAddress($mailAddr);
+		if (!empty($mailAddr) && !$validMail) {
+			throw new \Exception('Invalid mail address');
+		}
+
+		try {
+			$subscription = $this->subscriptionMapper->getByShareId($shareId);
+		} catch (DoesNotExistException $e) {
+			return true;
+		}
+
+		$mailAddr = trim($mailAddr);
+		if ($subscription instanceof Subscription) {
+			$db_emailsStr = $subscription->getEmails();
+			$db_emailsArr = \json_decode($db_emailsStr) ?? array();
+			if (in_array($mailAddr, $db_emailsArr)) {
+				if (($key = array_search($mailAddr, $db_emailsArr)) !== false) {
+					unset($db_emailsArr[$key]);
+				}
+				$subscription->setEmails(\json_encode(array_values($db_emailsArr)));
+				$this->subscriptionMapper->update($subscription);
+			}
+		}
 	}
 
 }

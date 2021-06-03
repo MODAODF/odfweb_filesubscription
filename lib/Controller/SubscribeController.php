@@ -64,11 +64,10 @@ class SubscribeController extends Controller {
 
 		// 以 share-id 取得訂閱資訊
 		foreach ($shares->getData() as $idx => $share) {
-
 			if ((int)$share['share_type'] === IShare::TYPE_LINK) {
 				try {
-					$subscription = $this->getSubscription($share['id']); //DataResponse
-					$subscriptionData = $subscription->getData();
+					$subscription = $this->manager->getSubscription($share['id']);
+					$subscriptionData = $this->formatDataForFE($subscription);
 				} catch (DoesNotExistException $e) {
 					$subscriptionData = null;
 				}
@@ -127,24 +126,7 @@ class SubscribeController extends Controller {
 		$setVal['cancelTime']= true;
 		$subscription = $this->manager->setSubscription($shareId, $setVal);
 
-		$result  = $this->formatDataForFE($subscription);
-		return new DataResponse($result);
-	}
-
-	/**
-	 * 取得單一分享連結的訂閱Emails
-	 * @NoAdminRequired
-	 */
-	private function getSubscription($shareId) {
-
-		// TODO: 只有admin可以讀取訂閱者資料
-		// if (!$this->manager->checkIsAdmin()) {
-		// 	return new JSONResponse(
-		// 		['message' => 'Logged in user must be an admin'],
-		// 		Http::STATUS_FORBIDDEN
-		// 	);
-		$subscription = $this->manager->getSubscription($shareId);
-		$result  = $this->formatDataForFE($subscription);
+		$result = $this->formatDataForFE($subscription);
 		return new DataResponse($result);
 	}
 
@@ -166,7 +148,7 @@ class SubscribeController extends Controller {
 	}
 
 	/**
-	 * 加入訂閱 Email
+	 * 加入訂閱者 Email
 	 *
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
@@ -184,9 +166,34 @@ class SubscribeController extends Controller {
 		}
 
 		try {
-			$subscription = $this->manager->setMail($shareId, $mailAddr);
+			$subscription = $this->manager->addIntoEMails($shareId, $mailAddr);
 		} catch (\Exception $e) {
-			return new DataResponse([$e->getMessage()], Http::STATUS_UNPROCESSABLE_ENTITY);
+			return new DataResponse([$e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	/**
+	 * 取消訂閱者 Email
+	 *
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 * @PublicPage
+	 *
+	 * @param string $token
+	 * @param string $mailAddr
+	 *
+	 */
+	public function removeSubscriber(string $token, string $mailAddr) {
+		try {
+			$shareId = $this->shareManager->getShareByToken($token)->getId();
+		} catch (ShareNotFound $e) {
+			return new DataResponse([$e->getMessage()], Http::STATUS_NOT_FOUND);
+		}
+
+		try {
+			$subscription = $this->manager->rmFromEmails($shareId, $mailAddr);
+		} catch (\Exception $e) {
+			return new DataResponse([$e->getMessage()], Http::STATUS_INTERNAL_SERVER_ERROR);
 		}
 	}
 
@@ -194,23 +201,12 @@ class SubscribeController extends Controller {
 	 * 前端需要的資訊
 	 */
 	protected function formatDataForFE(Subscription $subscription): array {
-		// $result = [
-		// 	'id'		=> $subscription->getId(),
-		// 	'share_id'	=> $subscription->getShareId(),
-		// 	'emails'	=> $subscription->getEmails(),
-		// 	'message'	=> $subscription->getParsedMessage(),
-		// 	'last_message_time'		=> $subscription->getLastMessageTime(),
-		// 	'last_email_time'		=> $subscription->getLastEmailTime(),
-		// 	'enabled'   => $subscription->getEnabled(),
-		// ];
-
 		$result = [
 			'share_id'	    => $subscription->getShareId(),
 			'enabled'       => $subscription->getEnabled(),
 			'message'	    => $subscription->getMessage(), // $subscription->getParsedMessage()
 			'subscriberNum' => 0,
 		];
-
 		if ($emails = $subscription->getEmails()) {
 			$emailsArr = json_decode($emails, true) ?? array();
 			$result['subscriberNum'] = count($emailsArr);
@@ -224,7 +220,6 @@ class SubscribeController extends Controller {
 		if ($lastCancelTime = $subscription->getLastCancelTime()) {
 			$result['last_cancel_time'] = date('Y-m-d H:i', $lastCancelTime);
 		}
-
 		return $result;
 	}
 

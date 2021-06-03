@@ -14,7 +14,7 @@ const SharedFile = {
 		}).done(function(res) {
 			if (res) this.renderHeader()
 		}).fail(function(e) {
-			console.debug('filesubscription _isSubscribable fail()', e)
+			console.debug('filesubscription get subscribeState fail()', e)
 		})
 	},
 
@@ -31,7 +31,7 @@ const SharedFile = {
 
 			$('#subscription-icon').on('click', this._onOpenEvent.bind(this))
 			$('form#subscription-mail').on('submit', this._onConfirmEvent.bind(this))
-
+			$('a#unsubscr').on('click', this._onUnsubscrEvent.bind(this))
 		}
 	},
 
@@ -75,6 +75,41 @@ const SharedFile = {
 		})
 	},
 
+	_onUnsubscrEvent(e) {
+		e.stopPropagation()
+		e.preventDefault()
+
+		const msgEl = $('#subscription-content .msg')
+		const msgResponse = {
+			status: '',
+			data: { message: '' }
+		}
+
+		const token = this.sharingToken
+		const mailAddr = $('form#subscription-mail input[name="email"]').val()
+
+		$.ajax({
+			url: OC.generateUrl('/apps/filesubscription/subscribe'),
+			type: 'DELETE',
+			data: { token, mailAddr },
+			beforeSend() {
+				$('form#subscription-mail input').attr('disabled', 'disabled')
+				OC.msg.startAction(msgEl, '處理中...')
+			}
+		}).done(function() {
+			msgResponse.data.message = '已取消'
+			msgResponse.status = 'success'
+			$('form#subscription-mail input[name="email"]').val('')
+		}).fail(function(e) {
+			msgResponse.data.message = '無法取消訂閱'
+			console.debug('filesubscription _onUnsubscrEvent fail()', e)
+
+		}).always(function(resp) {
+			OC.msg.finishedAction(msgEl, msgResponse)
+			$('form#subscription-mail input').removeAttr('disabled')
+		})
+
+	}
 }
 
 if (!OCA.FileSubscription) OCA.FileSubscription = {}
