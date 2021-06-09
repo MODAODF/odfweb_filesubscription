@@ -99,6 +99,22 @@ class Manager {
 	}
 
 	/**
+	 * 取得多筆訂閱資訊
+	 * @param string $uid
+	 * @param int $fileid
+	 * @return array
+	 * @throws SubscriptionDoesNotExistException
+	 */
+	public function getSubscriptions(string $uid, int $fileid = null) {
+		try {
+			$subscription = $this->subscriptionMapper->getSubscriptionsByUid($uid, $fileid);
+		} catch (DoesNotExistException $e) {
+			throw new SubscriptionDoesNotExistException();
+		}
+		return $subscription;
+	}
+
+	/**
 	 * 取得單一分享連結 是否啟用
 	 * @param int $shareId
 	 * @return int $isEnable
@@ -129,22 +145,12 @@ class Manager {
 		}
 
 		try {
-			$isNewShareId = false;
-			$subscription = $this->subscriptionMapper->getByShareId($shareId);
+			$subscription = $this->subscriptionMapper->getByShareId(99);
 		} catch (DoesNotExistException $e) {
-			$isNewShareId = true;
+			throw new SubscriptionDoesNotExistException();
 		}
 
-		// 新的分享連結
-		if ($isNewShareId) {
-			$subscription = new Subscription();
-			$subscription->setShareId($shareId);
-			$subscription->setEmails(json_encode(array($mailAddr)));
-			$this->subscriptionMapper->insert($subscription);
-		}
-
-		// 已經存在的分享連結
-		if (!$isNewShareId && $subscription instanceof Subscription) {
+		if ($subscription instanceof Subscription) {
 			$db_emailsStr = $subscription->getEmails();
 			$db_emailsArr = \json_decode($db_emailsStr) ?? array();
 			if (!in_array($mailAddr, $db_emailsArr)) {
@@ -190,4 +196,18 @@ class Manager {
 		}
 	}
 
+	/**
+	 * 建立訂閱資料
+	 * @param int $shareId
+	 * @param int $fileId
+	 * @param string $ownerUid
+	 */
+	public function createSubscription(int $shareId, int $fileId, string $ownerUid) {
+		$subscription = new Subscription();
+		$subscription->setShareId($shareId);
+		$subscription->setFileId($fileId);
+		$subscription->setOwnerUid($ownerUid);
+		$this->subscriptionMapper->insert($subscription);
+		return $subscription;
+	}
 }

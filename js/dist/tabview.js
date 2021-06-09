@@ -576,9 +576,9 @@ __webpack_require__.r(__webpack_exports__);
       $item: function $item(id) {
         return "<div class=\"item\" share-id=".concat(id, "></div>");
       },
-      $itemContent: function $itemContent(share, subscr) {
+      $itemContent_vaild: function $itemContent_vaild(share, subscr) {
         var params = {
-          shareId: share.id,
+          shareId: subscr.share_id,
           labelName: share.label,
           isEnabled: subscr.enabled,
           // int
@@ -601,6 +601,8 @@ __webpack_require__.r(__webpack_exports__);
         }
 
         return OCA.FileSubscription.Templates['sidebar-tabview'](params);
+      },
+      $itemContent_invaild: function $itemContent_invaild(subscr) {// return
       }
     },
 
@@ -624,12 +626,16 @@ __webpack_require__.r(__webpack_exports__);
     // 初始化資料：分享連結+訂閱資訊
     _getInitData: function _getInitData() {
       var file = this.getFileInfo();
+      var fileId = file.attributes.id;
       var path = "".concat(file.attributes.path, "/").concat(file.attributes.name);
-      var fullPath = path.replace('//', '/');
       $.ajax({
         context: this,
-        url: OC.generateUrl("/apps/filesubscription?format=json&path=".concat(encodeURIComponent(fullPath))),
-        type: 'GET',
+        url: OC.generateUrl("/apps/".concat(this.appId, "/")),
+        type: 'POST',
+        data: {
+          fileId: fileId,
+          path: JSON.stringify(path.replace('//', '/'))
+        },
         beforeSend: function beforeSend() {
           $('.linksWrapper').hide();
           $(this.$el).find('.loading').show();
@@ -656,31 +662,23 @@ __webpack_require__.r(__webpack_exports__);
         for (var idx in obj.data) {
           var row = obj.data[idx];
 
-          if (!row.subscription) {
-            // 尚未寫入 oc_subscription 的 sharelink 預設值
-            row.subscription = {
-              // id: null,
-              share_id: row.sharing.id,
-              enabled: 1,
-              message: '',
-              subscriberNum: 0,
-              last_message_time: null,
-              last_email_time: null,
-              last_cancel_time: null
-            };
-          }
+          if (row.sharing) {
+            var itemWrapper = templates.$item(row.subscription.share_id);
+            var itemContent = templates.$itemContent_vaild(row.sharing, row.subscription);
+            var selector = ".item[share-id=".concat(row.subscription.share_id, "]"); // 避免重複 render
 
-          var itemWrapper = templates.$item(row.sharing.id);
-          var itemContent = templates.$itemContent(row.sharing, row.subscription);
-          var selector = ".item[share-id=".concat(row.sharing.id, "]"); // 避免重複 render
+            if ($(selector).length === 0) {
+              $wrapper.append(itemWrapper);
+            }
 
-          if ($(selector).length === 0) {
-            $wrapper.append(itemWrapper);
-          }
-
-          if ($(selector).children().length === 0) {
-            $(selector).append(itemContent);
-            $(selector).find('button.entryEdit').click();
+            if ($(selector).children().length === 0) {
+              $(selector).append(itemContent);
+              $(selector).find('button.entryEdit').click();
+            }
+          } else {// typeof row.sharing == 'undefined'
+            // const itemWrapper = templates.$item(row.subscription.share_id)
+            // const itemContent = templates.$itemContent_invaild(row.subscription)
+            // const selector = `.item[share-id=${row.subscription.share_id}]`
           }
         }
       }
@@ -701,7 +699,7 @@ __webpack_require__.r(__webpack_exports__);
         last_email_time: resp.last_email_time,
         last_cancel_time: resp.last_cancel_time
       };
-      $item.html(this._sectionTemplates.$itemContent(share, subscr));
+      $item.html(this._sectionTemplates.$itemContent_vaild(share, subscr));
     },
     // 顯示訂閱設定內容
     _onEntryEdit: function _onEntryEdit(e) {

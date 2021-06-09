@@ -12,12 +12,12 @@ use OCA\FileSubscription\Model\SubscriptionDoesNotExistException;
 class ShareHooks {
 
 	/**
-	 * Unsharing event: 檢查有沒有訂閱，有人訂閱就不給刪
+	 * Unsharing event: 刪除分享連結前，檢查有沒有訂閱
 	 *
 	 * @param GenericEvent $event
 	 * @throws OCSBadRequestException
 	 */
-	public static function unShare(GenericEvent $event) {
+	public static function preUnshare(GenericEvent $event) {
 		$share = $event->getSubject();
 		if ($share instanceof IShare) {
 			$shareId = $share->getId();
@@ -36,5 +36,34 @@ class ShareHooks {
 				throw new OCSBadRequestException('此分享連結尚有訂閱者，無法取消分享');
 			}
 		}
+	}
+	/**
+	 * postUnshare event: 刪除share連結之後，
+	 *
+	 * @param GenericEvent $event
+	 * @throws OCSBadRequestException
+	 */
+	public static function postUnshare(GenericEvent $event) {
+		// return;
+	}
+
+	/**
+	 * postShare event: 建立share連結後，建訂閱資料
+	 *
+	 * @param GenericEvent $event
+	 * @throws OCSBadRequestException
+	 */
+	public static function postShare(GenericEvent $event) {
+		$currentUser = \OC::$server->getUserSession()->getUser()->getUID();
+		$share = $event->getSubject();
+		$shareType = $share->getShareType();
+
+		$node = $share->getNode();
+		$fileOwner = $node->getOwner()->getUid();
+
+		if ($currentUser === $fileOwner && $shareType === IShare::TYPE_LINK) {
+			\OC::$server->query(Manager::class)->createSubscription($share->getId(), $node->getId(), $fileOwner);
+		}
+
 	}
 }

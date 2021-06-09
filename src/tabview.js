@@ -31,9 +31,9 @@ import '../css/tabview.scss'
 			$item(id) {
 				return `<div class="item" share-id=${id}></div>`
 			},
-			$itemContent(share, subscr) {
+			$itemContent_vaild(share, subscr) {
 				const params = {
-					shareId: share.id,
+					shareId: subscr.share_id,
 					labelName: share.label,
 					isEnabled: subscr.enabled, // int
 					entryAvatarCssClass: subscr.enabled ? 'entryAvatarOpen' : 'entryAvatarClose',
@@ -53,6 +53,9 @@ import '../css/tabview.scss'
 				}
 				return OCA.FileSubscription.Templates['sidebar-tabview'](params)
 			},
+			$itemContent_invaild(subscr) {
+				// return
+			}
 		},
 
 		/**
@@ -75,12 +78,16 @@ import '../css/tabview.scss'
 		// 初始化資料：分享連結+訂閱資訊
 		_getInitData() {
 			const file = this.getFileInfo()
+			const fileId = file.attributes.id
 			const path = `${file.attributes.path}/${file.attributes.name}`
-			const fullPath = path.replace('//', '/')
 			$.ajax({
 				context: this,
-				url: OC.generateUrl(`/apps/filesubscription?format=json&path=${encodeURIComponent(fullPath)}`),
-				type: 'GET',
+				url: OC.generateUrl(`/apps/${this.appId}/`),
+				type: 'POST',
+				data: {
+					fileId,
+					path: JSON.stringify(path.replace('//', '/'))
+				},
 				beforeSend() {
 					$('.linksWrapper').hide()
 					$(this.$el).find('.loading').show()
@@ -106,32 +113,27 @@ import '../css/tabview.scss'
 			else {
 				for (const idx in obj.data) {
 					const row = obj.data[idx]
-					if (!row.subscription) {
-						// 尚未寫入 oc_subscription 的 sharelink 預設值
-						row.subscription = {
-							// id: null,
-							share_id: row.sharing.id,
-							enabled: 1,
-							message: '',
-							subscriberNum: 0,
-							last_message_time: null,
-							last_email_time: null,
-							last_cancel_time: null,
+
+					if (row.sharing) {
+						const itemWrapper = templates.$item(row.subscription.share_id)
+						const itemContent = templates.$itemContent_vaild(row.sharing, row.subscription)
+						const selector = `.item[share-id=${row.subscription.share_id}]`
+
+						// 避免重複 render
+						if ($(selector).length === 0) {
+							$wrapper.append(itemWrapper)
 						}
+						if ($(selector).children().length === 0) {
+							$(selector).append(itemContent)
+							$(selector).find('button.entryEdit').click()
+						}
+					} else {
+						// typeof row.sharing == 'undefined'
+						// const itemWrapper = templates.$item(row.subscription.share_id)
+						// const itemContent = templates.$itemContent_invaild(row.subscription)
+						// const selector = `.item[share-id=${row.subscription.share_id}]`
 					}
 
-					const itemWrapper = templates.$item(row.sharing.id)
-					const itemContent = templates.$itemContent(row.sharing, row.subscription)
-					const selector = `.item[share-id=${row.sharing.id}]`
-
-					// 避免重複 render
-					if ($(selector).length === 0) {
-						$wrapper.append(itemWrapper)
-					}
-					if ($(selector).children().length === 0) {
-						$(selector).append(itemContent)
-						$(selector).find('button.entryEdit').click()
-					}
 				}
 			}
 			$wrapper.show()
@@ -152,7 +154,7 @@ import '../css/tabview.scss'
 				last_email_time: resp.last_email_time,
 				last_cancel_time: resp.last_cancel_time,
 			}
-			$item.html(this._sectionTemplates.$itemContent(share, subscr))
+			$item.html(this._sectionTemplates.$itemContent_vaild(share, subscr))
 		},
 
 		// 顯示訂閱設定內容

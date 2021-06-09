@@ -10,6 +10,7 @@ use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\NotFoundResponse;
+use OCP\AppFramework\OCS\OCSNotFoundException;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCA\FileSubscription\Manager;
@@ -55,27 +56,43 @@ class SubscribeController extends Controller {
 	 * 取得 分享連結和訂閱資訊（側邊攔初始化資料）
 	 * @NoAdminRequired
 	 */
-	public function index(string $path) {
-
+	public function index(int $fileId, string $path) {
 		if(!$this->shareApi) return new NotFoundResponse();
+		$uid = \OC::$server->getUserSession()->getUser()->getUID();
+		$this->refresh($uid, $fileId, json_decode($path));
 
-		// 取得分享連結
+		// 取得 user 在這個檔案建立的訂閱
+		$subscriptions = $this->manager->getSubscriptions($uid, $fileId);
+		if(count($subscriptions) < 1) {
+			return new DataResponse([]);
+		}
+
+		foreach($subscriptions as $idx => $subscr) {
+			$respData[$idx]['subscription'] = $this->formatDataForFE($subscr);
+			try {
+				$share = $this->shareApi->getShare((string)$subscr->getShareId()); // DataResponse
+				if($share) $respData[$idx]['sharing'] = $share->getData()[0];
+			} catch (OCSNotFoundException $e) {
+			}
+		}
+		return new DataResponse($respData);
+	}
+
+	/**
+	 * 重整訂閱料
+	 */
+	private function refresh(string $uid, int $fileId, string $path) {
 		$shares = $this->shareApi->getShares('', '', '', $path, ''); // DataResponse
-
-		// 以 share-id 取得訂閱資訊
-		foreach ($shares->getData() as $idx => $share) {
+		foreach ($shares->getData() as $share) {
 			if ((int)$share['share_type'] === IShare::TYPE_LINK) {
 				try {
 					$subscription = $this->manager->getSubscription($share['id']);
-					$subscriptionData = $this->formatDataForFE($subscription);
 				} catch (DoesNotExistException $e) {
-					$subscriptionData = null;
+					// 有分享連結 但沒有訂閱資料 => 新增訂閱資料
+					$this->manager->createSubscription($share['id'], $fileId, $uid);
 				}
-				$initData[$idx]['sharing'] = $share;
-				$initData[$idx]['subscription'] = $subscriptionData;
 			}
 		}
-		return new DataResponse($initData);
 	}
 
 	/**

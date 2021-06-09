@@ -31,7 +31,10 @@ class Application extends App implements IBootstrap {
 			\OCP\Util::addScript(self::APP_ID, 'dist/sharedfile');
 			\OCP\Util::addScript(self::APP_ID, 'templates');
 		});
-		$dispatcher->addListener('OCP\Share::preUnshare', [ShareHooks::class, 'unShare']);
+
+		$dispatcher->addListener('OCP\Share::postShare', [ShareHooks::class, 'postShare']);
+		$dispatcher->addListener('OCP\Share::preUnshare', [ShareHooks::class, 'preUnshare']);
+		$dispatcher->addListener('OCP\Share::postUnshare', [ShareHooks::class, 'postUnshare']);
 	}
 
 	public function boot(IBootContext $context): void {

@@ -42,6 +42,14 @@ class Version1000Date20210416134634 extends SimpleMigrationStep {
 				'notnull' => true,
 				'length' => 4,
 			]);
+			$table->addColumn('owner_uid', Types::STRING, [
+				'notnull' => true,
+				'length' => 64,
+			]);
+			$table->addColumn('file_id', Types::INTEGER, [
+				'notnull' => true,
+				'length' => 4,
+			]);
 			$table->addColumn('emails', Types::TEXT, [
 				'notnull' => false,
 				'default' => '',

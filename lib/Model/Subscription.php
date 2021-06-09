@@ -9,6 +9,12 @@ class Subscription extends Entity {
 	/** @var int */
 	protected $shareId;
 
+	/** @var int */
+	protected $fileId;
+
+	/** @var string */
+	protected $ownerUid;
+
 	/** @var string */
 	protected $emails;
 
@@ -29,6 +35,8 @@ class Subscription extends Entity {
 
 	public function __construct() {
 		$this->addType('shareId', 'int');
+		$this->addType('fileId', 'int');
+		$this->addType('ownerUid', 'string');
 		$this->addType('emails', 'string');
 		$this->addType('message', 'string');
 		$this->addType('lastMessageTime', 'int');
