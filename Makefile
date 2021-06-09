@@ -11,5 +11,6 @@ dev: clean
 	npm run dev
 
 buildjs: clean
+	node node_modules/handlebars/bin/handlebars -n OCA.FileSubscription.Templates src/templates -f js/templates.js
 	npm ci
 	npm run build
