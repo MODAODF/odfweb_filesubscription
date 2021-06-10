@@ -88,7 +88,7 @@ class Manager {
 	 * @return Subscription
 	 * @throws SubscriptionDoesNotExistException
 	 */
-	public function getSubscription(int $shareId): Subscription {
+	public function getSubscrByShareId(int $shareId): Subscription {
 		// TODO 只有admin或 有ShareLink權限的user 可以取得
 		try {
 			$subscription = $this->subscriptionMapper->getByShareId($shareId);
@@ -96,6 +96,20 @@ class Manager {
 			throw new SubscriptionDoesNotExistException();
 		}
 		return $subscription;
+	}
+
+	/**
+	 * @param int $fileId
+	 * @return array
+	 * @throws SubscriptionDoesNotExistException
+	 */
+	public function getSubscrByFileId(int $fileId) {
+		try {
+			$subscriptions = $this->subscriptionMapper->getByFileId($fileId);
+		} catch (DoesNotExistException $e) {
+			throw new SubscriptionDoesNotExistException();
+		}
+		return $subscriptions;
 	}
 
 	/**

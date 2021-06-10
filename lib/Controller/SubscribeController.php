@@ -86,7 +86,7 @@ class SubscribeController extends Controller {
 		foreach ($shares->getData() as $share) {
 			if ((int)$share['share_type'] === IShare::TYPE_LINK) {
 				try {
-					$subscription = $this->manager->getSubscription($share['id']);
+					$subscription = $this->manager->getSubscrByShareId($share['id']);
 				} catch (DoesNotExistException $e) {
 					// 有分享連結 但沒有訂閱資料 => 新增訂閱資料
 					$this->manager->createSubscription($share['id'], $fileId, $uid);
@@ -113,7 +113,7 @@ class SubscribeController extends Controller {
 	 * @NoAdminRequired
 	 */
 	public function cancel(int $shareId) {
-		$subscription = $this->manager->getSubscription($shareId);
+		$subscription = $this->manager->getSubscrByShareId($shareId);
 		if(count(\json_decode($subscription->getEmails())) < 1) {
 			return new DataResponse(
 				['message' => '沒有訂閱者'],

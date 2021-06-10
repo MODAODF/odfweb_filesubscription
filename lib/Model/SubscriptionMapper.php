@@ -29,6 +29,20 @@ class SubscriptionMapper extends QBMapper {
 	}
 
 	/**
+	 * @param int $fileId
+	 * @throws DoesNotExistException
+	 */
+	public function getByFileId(int $fileId) {
+		$query = $this->db->getQueryBuilder();
+		$query->select('*')
+			->from($this->getTableName())
+			->where(
+				$query->expr()->eq('file_id', $query->createNamedParameter($fileId))
+			);
+		return $this->findEntities($query);
+	}
+
+	/**
 	 * @param string $uid
 	 * @param int $fileid
 	 * @return Subscription

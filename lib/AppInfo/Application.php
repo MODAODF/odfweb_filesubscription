@@ -2,16 +2,18 @@
 
 namespace OCA\FileSubscription\AppInfo;
 
-use OCA\Files\Event\LoadSidebar;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\Util;
+use OCA\Files\Event\LoadSidebar;
+use OCP\Files\Events\Node\BeforeNodeDeletedEvent;
 use OCA\FileSubscription\Listener\LoadSidebarScripts;
 use OCP\EventDispatcher\IEventDispatcher;
 // use OCA\Files\Event\LoadAdditionalScriptsEvent;
 use OCA\FileSubscription\ShareHooks;
+use OCA\FileSubscription\Listener\BeforeDeleteListener;
 
 class Application extends App implements IBootstrap {
 	public const APP_ID = 'filesubscription';
@@ -32,9 +34,13 @@ class Application extends App implements IBootstrap {
 			\OCP\Util::addScript(self::APP_ID, 'templates');
 		});
 
+		// 分享連結hook
 		$dispatcher->addListener('OCP\Share::postShare', [ShareHooks::class, 'postShare']);
 		$dispatcher->addListener('OCP\Share::preUnshare', [ShareHooks::class, 'preUnshare']);
 		$dispatcher->addListener('OCP\Share::postUnshare', [ShareHooks::class, 'postUnshare']);
+
+		// 刪除檔案前檢查
+		$dispatcher->addServiceListener(BeforeNodeDeletedEvent::class, BeforeDeleteListener::class);
 	}
 
 	public function boot(IBootContext $context): void {

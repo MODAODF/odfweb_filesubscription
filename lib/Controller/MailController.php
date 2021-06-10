@@ -85,7 +85,7 @@ class MailController extends Controller {
 	public function updateMail($shareId) {
 
 		try {
-			$subscription = $this->manager->getSubscription($shareId);
+			$subscription = $this->manager->getSubscrByShareId($shareId);
 		} catch (SubscriptionDoesNotExistException $e) {
 			return new DataResponse([
 				'data' => [
@@ -131,7 +131,7 @@ class MailController extends Controller {
 	public function cancelMail(int $shareId) {
 
 		try {
-			$subscription = $this->manager->getSubscription($shareId);
+			$subscription = $this->manager->getSubscrByShareId($shareId);
 		} catch (SubscriptionDoesNotExistException $e) {
 			return new DataResponse([
 				'data' => [

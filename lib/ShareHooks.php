@@ -24,7 +24,7 @@ class ShareHooks {
 			$manager = \OC::$server->query(Manager::class);
 
 			try {
-				$subscription = $manager->getSubscription($shareId);
+				$subscription = $manager->getSubscrByShareId($shareId);
 				$emails = $subscription->getEmails();
 			} catch (SubscriptionDoesNotExistException $e) {
 				return;
