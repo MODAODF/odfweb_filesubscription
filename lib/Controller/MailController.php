@@ -112,6 +112,8 @@ class MailController extends Controller {
 		$setVal['updateEmailTime'] = true;
 		$subscription = $this->manager->setSubscription($shareId, $setVal);
 
+		$this->manager->writeSubscrLog($subscription);
+
 		return new DataResponse([
 			'data' => [
 				'message' => $this->l10n->t('%s email sent.', [$sentCount]),

@@ -3,8 +3,10 @@
 namespace OCA\FileSubscription;
 
 use OCA\FileSubscription\Model\Subscription;
-use OCA\FileSubscription\Model\SubscriptionDoesNotExistException;
+use OCA\FileSubscription\Model\SubscriptionLog;
 use OCA\FileSubscription\Model\SubscriptionMapper;
+use OCA\FileSubscription\Model\SubscriptionLogMapper as LogMapper;
+use OCA\FileSubscription\Model\SubscriptionDoesNotExistException;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\IConfig;
@@ -19,13 +21,22 @@ class Manager {
 	/** @var SubscriptionMapper */
 	protected $subscriptionMapper;
 
+	/** @var LogMapper */
+	protected $logMapper;
+
 	/** @var ITimeFactory */
 	protected $timeFactory;
 
-	public function __construct(IConfig $config, SubscriptionMapper $subscriptionMapper, ITimeFactory $timeFactory) {
+	public function __construct(IConfig $config, SubscriptionMapper $subscriptionMapper, LogMapper $logMapper, ITimeFactory $timeFactory) {
 		$this->config = $config;
 		$this->subscriptionMapper = $subscriptionMapper;
+		$this->logMapper = $logMapper;
 		$this->timeFactory = $timeFactory;
+
+		$shareApi = 'OCA\Files_Sharing\Controller\ShareAPIController';
+		if (class_exists($shareApi)) {
+			$this->shareApi = \OC::$server->query($shareApi);
+		}
 	}
 
 	/**
@@ -37,10 +48,9 @@ class Manager {
 	public function setSubscription(int $shareId, $setVal): Subscription {
 
 		try {
-			$isNewShareId = false;
 			$subscription = $this->subscriptionMapper->getByShareId($shareId);
 		} catch (DoesNotExistException $e) {
-			$isNewShareId = true;
+			throw new SubscriptionDoesNotExistException();
 		}
 
 		if ($isNewShareId) {
@@ -73,10 +83,7 @@ class Manager {
 			$subscription->setLastCancelTime($this->timeFactory->getTime());
 		}
 
-		if ($isNewShareId) {
-			$this->subscriptionMapper->insert($subscription);
-		}
-		if (!$isNewShareId && $subscription instanceof Subscription) {
+		if ($subscription instanceof Subscription) {
 			$this->subscriptionMapper->update($subscription);
 		}
 		return $subscription;
@@ -159,7 +166,7 @@ class Manager {
 		}
 
 		try {
-			$subscription = $this->subscriptionMapper->getByShareId(99);
+			$subscription = $this->subscriptionMapper->getByShareId($shareId);
 		} catch (DoesNotExistException $e) {
 			throw new SubscriptionDoesNotExistException();
 		}
@@ -221,7 +228,30 @@ class Manager {
 		$subscription->setShareId($shareId);
 		$subscription->setFileId($fileId);
 		$subscription->setOwnerUid($ownerUid);
+
+		if($this->shareApi) {
+			$share = $this->shareApi->getShare($shareId);
+			$subscription->setFileName($share->getData()[0]['file_target']);
+			$subscription->setShareLabel($share->getData()[0]['label']);
+		};
+
 		$this->subscriptionMapper->insert($subscription);
 		return $subscription;
 	}
+
+	/**
+	 * 寫入一筆訂閱說明紀錄
+	 * @param int $subscrId
+	 * @param Subscription $subscr
+	 * @param string $ownerUid
+	 */
+	public function writeSubscrLog(Subscription $subscr) {
+		$log = new SubscriptionLog();
+		$log->setSubscrId($subscr->getId());
+		$log->setSubscrMsg($subscr->getMessage());
+		$log->setSubscrTime($subscr->getLastMessageTime());
+		$this->logMapper->insert($log);
+		return $log;
+	}
+
 }

@@ -33,7 +33,7 @@ import '../css/tabview.scss'
 			},
 			$itemContent_vaild(share, subscr) {
 				const params = {
-					shareId: subscr.share_id,
+					shareId: share.id,
 					labelName: share.label,
 					isEnabled: subscr.enabled, // int
 					entryAvatarCssClass: subscr.enabled ? 'entryAvatarOpen' : 'entryAvatarClose',

@@ -42,13 +42,21 @@ class Version1000Date20210416134634 extends SimpleMigrationStep {
 				'notnull' => true,
 				'length' => 4,
 			]);
-			$table->addColumn('owner_uid', Types::STRING, [
-				'notnull' => true,
-				'length' => 64,
+			$table->addColumn('share_label', Types::TEXT, [
+				'notnull' => false,
+				'length' => 255,
 			]);
 			$table->addColumn('file_id', Types::INTEGER, [
 				'notnull' => true,
 				'length' => 4,
+			]);
+			$table->addColumn('file_name', Types::TEXT, [
+				'notnull' => false,
+				'length' => 512,
+			]);
+			$table->addColumn('owner_uid', Types::STRING, [
+				'notnull' => true,
+				'length' => 64,
 			]);
 			$table->addColumn('emails', Types::TEXT, [
 				'notnull' => false,
@@ -81,6 +89,27 @@ class Version1000Date20210416134634 extends SimpleMigrationStep {
 
 		}
 
+		if (!$schema->hasTable('filesubscription_log')) {
+			$table = $schema->createTable('filesubscription_log');
+			$table->addColumn('id', Types::INTEGER, [
+				'autoincrement' => true,
+				'notnull' => true,
+				'length' => 4,
+			]);
+			$table->addColumn('subscr_id', Types::INTEGER, [
+				'notnull' => true,
+				'length' => 4,
+			]);
+			$table->addColumn('subscr_msg', Types::TEXT, [
+				'notnull' => false,
+				'default' => '',
+			]);
+			$table->addColumn('subscr_time', Types::INTEGER, [
+				'notnull' => true,
+				'length' => 4,
+			]);
+			$table->setPrimaryKey(['id']);
+		}
 		return $schema;
 	}
 

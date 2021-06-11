@@ -578,7 +578,7 @@ __webpack_require__.r(__webpack_exports__);
       },
       $itemContent_vaild: function $itemContent_vaild(share, subscr) {
         var params = {
-          shareId: subscr.share_id,
+          shareId: share.id,
           labelName: share.label,
           isEnabled: subscr.enabled,
           // int

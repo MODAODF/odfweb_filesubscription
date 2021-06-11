@@ -9,8 +9,14 @@ class Subscription extends Entity {
 	/** @var int */
 	protected $shareId;
 
+	/** @var string */
+	protected $shareLabel;
+
 	/** @var int */
 	protected $fileId;
+
+	/** @var string */
+	protected $fileName;
 
 	/** @var string */
 	protected $ownerUid;
@@ -35,7 +41,9 @@ class Subscription extends Entity {
 
 	public function __construct() {
 		$this->addType('shareId', 'int');
+		$this->addType('shareLabel', 'string');
 		$this->addType('fileId', 'int');
+		$this->addType('fileName', 'string');
 		$this->addType('ownerUid', 'string');
 		$this->addType('emails', 'string');
 		$this->addType('message', 'string');
