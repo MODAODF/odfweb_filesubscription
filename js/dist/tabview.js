@@ -132,7 +132,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()(_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default.a);
 // Module
-___CSS_LOADER_EXPORT___.push([module.i, "#fileSubscriptionTabView {\n  /* utilize */ }\n  #fileSubscriptionTabView .icon {\n    display: inline-block; }\n  #fileSubscriptionTabView .msg {\n    color: #000;\n    font-size: 13px;\n    padding: 2px;\n    margin-left: 5px; }\n    #fileSubscriptionTabView .msg.success {\n      color: #fff;\n      background-color: #47a447; }\n    #fileSubscriptionTabView .msg.error {\n      color: #fff;\n      background-color: #d2322d; }\n  #fileSubscriptionTabView .lasttime {\n    font-size: 13px; }\n  #fileSubscriptionTabView .itemEntry {\n    display: flex;\n    align-items: center;\n    justify-content: space-between; }\n    #fileSubscriptionTabView .itemEntry .entryAvatar, #fileSubscriptionTabView .itemEntry button {\n      width: 32px;\n      height: 32px;\n      border-radius: 50%; }\n    #fileSubscriptionTabView .itemEntry .entryAvatarClose {\n      background-color: #ef5350; }\n    #fileSubscriptionTabView .itemEntry .entryAvatarOpen {\n      background-color: #8bc34a; }\n    #fileSubscriptionTabView .itemEntry .entryDesc {\n      display: flex;\n      flex-direction: column;\n      padding: 8px;\n      line-height: 1.2em;\n      overflow: hidden; }\n      #fileSubscriptionTabView .itemEntry .entryDesc div {\n        font-size: 12.5px;\n        color: var(--color-text-maxcontrast); }\n    #fileSubscriptionTabView .itemEntry button.entryEdit {\n      background-color: inherit;\n      border: none;\n      margin-left: auto;\n      transition: all .05s ease-in-out; }\n      #fileSubscriptionTabView .itemEntry button.entryEdit:enabled:hover {\n        background-color: lightgrey; }\n      #fileSubscriptionTabView .itemEntry button.entryEdit.rotate {\n        transform: rotate(180deg); }\n  #fileSubscriptionTabView ul {\n    margin-left: 32px; }\n    #fileSubscriptionTabView ul::after {\n      content: \" \";\n      border-bottom: 2px solid #e0e0e0;\n      display: block;\n      margin: 30px 0;\n      position: relative; }\n    #fileSubscriptionTabView ul li {\n      margin-top: 25px; }\n      #fileSubscriptionTabView ul li > div:first-child {\n        display: flex;\n        align-items: center;\n        margin-bottom: 5px; }\n        #fileSubscriptionTabView ul li > div:first-child .icon {\n          margin-right: 10px; }\n    #fileSubscriptionTabView ul textarea {\n      width: 100%;\n      resize: vertical;\n      max-height: 400px; }\n      #fileSubscriptionTabView ul textarea ~ div {\n        display: flex;\n        justify-content: space-between;\n        align-items: center; }\n        #fileSubscriptionTabView ul textarea ~ div .setDescr {\n          justify-self: flex-end;\n          margin-left: auto; }\n", "",{"version":3,"sources":["webpack://./css/tabview.scss"],"names":[],"mappings":"AAAA;EAEI,YAAA,EAAa;EAFjB;IAIQ,qBAAqB,EAAA;EAJ7B;IAOQ,WAAW;IACX,eAAe;IACf,YAAY;IACZ,gBAAgB,EAAA;IAVxB;MAYY,WAAW;MACX,yBAAyB,EAAA;IAbrC;MAgBY,WAAW;MACX,yBAAyB,EAAA;EAjBrC;IAqBQ,eAAe,EAAA;EArBvB;IAyBQ,aAAa;IACb,mBAAmB;IACnB,8BAA8B,EAAA;IA3BtC;MA8BY,WAAW;MACX,YAAY;MACZ,kBAAkB,EAAA;IAhC9B;MAkC4B,yBAAyB,EAAA;IAlCrD;MAmC2B,yBAAyB,EAAA;IAnCpD;MAqCY,aAAa;MACb,sBAAsB;MACtB,YAAY;MACZ,kBAAkB;MAClB,gBAAgB,EAAA;MAzC5B;QA2CgB,iBAAiB;QACjB,oCAAoC,EAAA;IA5CpD;MAgDY,yBAAyB;MACzB,YAAY;MACZ,iBAAiB;MACjB,gCAAgC,EAAA;MAnD5C;QAoD8B,2BAA2B,EAAA;MApDzD;QAsDgB,yBAAyB,EAAA;EAtDzC;IA6DQ,iBAAiB,EAAA;IA7DzB;MA+DY,YAAY;MACZ,gCAAgC;MAChC,cAAc;MACd,cAAc;MACd,kBAAkB,EAAA;IAnE9B;MAuEY,gBAAgB,EAAA;MAvE5B;QAyEgB,aAAa;QACb,mBAAmB;QACnB,kBAAkB,EAAA;QA3ElC;UA6EoB,kBAAkB,EAAA;IA7EtC;MAmFY,WAAW;MACX,gBAAgB;MAChB,iBAAiB,EAAA;MArF7B;QAuFgB,aAAa;QACb,8BAA8B;QAC9B,mBAAmB,EAAA;QAzFnC;UA2FoB,sBAAsB;UACtB,iBAAiB,EAAA","sourcesContent":["#fileSubscriptionTabView {\n\n    /* utilize */\n    .icon {\n        display: inline-block;\n    }\n    .msg {\n        color: #000;\n        font-size: 13px;\n        padding: 2px;\n        margin-left: 5px;\n        &.success {\n            color: #fff;\n            background-color: #47a447;\n        }\n        &.error {\n            color: #fff;\n            background-color: #d2322d;\n        }\n    }\n    .lasttime {\n        font-size: 13px;\n    }\n\n    .itemEntry {\n        display: flex;\n        align-items: center;\n        justify-content: space-between;\n\n        .entryAvatar, button {\n            width: 32px;\n            height: 32px;\n            border-radius: 50%;\n        }\n        .entryAvatarClose { background-color: #ef5350; }\n        .entryAvatarOpen { background-color: #8bc34a; }\n        .entryDesc {\n            display: flex;\n            flex-direction: column;\n            padding: 8px;\n            line-height: 1.2em;\n            overflow: hidden;\n            div {\n                font-size: 12.5px;\n                color: var(--color-text-maxcontrast);\n            }\n        }\n        button.entryEdit {\n            background-color: inherit;\n            border: none;\n            margin-left: auto;\n            transition: all .05s ease-in-out;\n            &:enabled:hover { background-color: lightgrey; }\n            &.rotate {\n                transform: rotate(180deg);\n            }\n        }\n    }\n\n    ul {\n        // display: none;\n        margin-left: 32px;\n        &::after {\n            content: \" \";\n            border-bottom: 2px solid #e0e0e0;\n            display: block;\n            margin: 30px 0;\n            position: relative;\n        }\n\n        li {\n            margin-top: 25px;\n            & > div:first-child {\n                display: flex;\n                align-items: center;\n                margin-bottom: 5px;\n                .icon {\n                    margin-right: 10px;\n                }\n            }\n        }\n\n        textarea {\n            width: 100%;\n            resize: vertical;\n            max-height: 400px;\n            & ~ div {\n                display: flex;\n                justify-content: space-between;\n                align-items: center;\n                .setDescr {\n                    justify-self: flex-end;\n                    margin-left: auto;\n                }\n            }\n\n        }\n    }\n}\n"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.i, "#fileSubscriptionTabView {\n  /* utilize */ }\n  #fileSubscriptionTabView .icon {\n    display: inline-block; }\n  #fileSubscriptionTabView .msg {\n    color: #000;\n    font-size: 13px;\n    padding: 2px;\n    margin-left: 5px; }\n    #fileSubscriptionTabView .msg.success {\n      color: #fff;\n      background-color: #47a447; }\n    #fileSubscriptionTabView .msg.error {\n      color: #fff;\n      background-color: #d2322d; }\n  #fileSubscriptionTabView .lasttime {\n    font-size: 13px; }\n  #fileSubscriptionTabView .itemEntry {\n    display: flex;\n    align-items: center;\n    justify-content: space-between; }\n    #fileSubscriptionTabView .itemEntry .entryAvatar, #fileSubscriptionTabView .itemEntry button {\n      width: 32px;\n      height: 32px;\n      border-radius: 50%; }\n    #fileSubscriptionTabView .itemEntry .entryAvatarClose {\n      background-color: #ef5350; }\n    #fileSubscriptionTabView .itemEntry .entryAvatarOpen {\n      background-color: #8bc34a; }\n    #fileSubscriptionTabView .itemEntry .entryAvatarInvaild {\n      background-color: gray; }\n    #fileSubscriptionTabView .itemEntry .entryDesc {\n      display: flex;\n      flex-direction: column;\n      padding: 8px;\n      line-height: 1.2em;\n      overflow: hidden; }\n      #fileSubscriptionTabView .itemEntry .entryDesc div {\n        font-size: 12.5px;\n        color: var(--color-text-maxcontrast); }\n    #fileSubscriptionTabView .itemEntry button.entryEdit {\n      background-color: inherit;\n      border: none;\n      margin-left: auto;\n      transition: all .05s ease-in-out; }\n      #fileSubscriptionTabView .itemEntry button.entryEdit:enabled:hover {\n        background-color: lightgrey; }\n      #fileSubscriptionTabView .itemEntry button.entryEdit.rotate {\n        transform: rotate(180deg); }\n  #fileSubscriptionTabView ul {\n    margin-left: 32px; }\n    #fileSubscriptionTabView ul::after {\n      content: \" \";\n      border-bottom: 2px solid #e0e0e0;\n      display: block;\n      margin: 30px 0;\n      position: relative; }\n    #fileSubscriptionTabView ul li {\n      margin-top: 25px; }\n      #fileSubscriptionTabView ul li > div:first-child {\n        display: flex;\n        align-items: center;\n        margin-bottom: 5px; }\n        #fileSubscriptionTabView ul li > div:first-child .icon {\n          margin-right: 10px; }\n    #fileSubscriptionTabView ul textarea {\n      width: 100%;\n      resize: vertical;\n      max-height: 400px; }\n      #fileSubscriptionTabView ul textarea ~ div {\n        display: flex;\n        justify-content: space-between;\n        align-items: center; }\n        #fileSubscriptionTabView ul textarea ~ div .setDescr {\n          justify-self: flex-end;\n          margin-left: auto; }\n", "",{"version":3,"sources":["webpack://./css/tabview.scss"],"names":[],"mappings":"AAAA;EAEI,YAAA,EAAa;EAFjB;IAIQ,qBAAqB,EAAA;EAJ7B;IAOQ,WAAW;IACX,eAAe;IACf,YAAY;IACZ,gBAAgB,EAAA;IAVxB;MAYY,WAAW;MACX,yBAAyB,EAAA;IAbrC;MAgBY,WAAW;MACX,yBAAyB,EAAA;EAjBrC;IAqBQ,eAAe,EAAA;EArBvB;IAyBQ,aAAa;IACb,mBAAmB;IACnB,8BAA8B,EAAA;IA3BtC;MA8BY,WAAW;MACX,YAAY;MACZ,kBAAkB,EAAA;IAhC9B;MAkC4B,yBAAyB,EAAA;IAlCrD;MAmC2B,yBAAyB,EAAA;IAnCpD;MAoC8B,sBAAsB,EAAA;IApCpD;MAsCY,aAAa;MACb,sBAAsB;MACtB,YAAY;MACZ,kBAAkB;MAClB,gBAAgB,EAAA;MA1C5B;QA4CgB,iBAAiB;QACjB,oCAAoC,EAAA;IA7CpD;MAiDY,yBAAyB;MACzB,YAAY;MACZ,iBAAiB;MACjB,gCAAgC,EAAA;MApD5C;QAqD8B,2BAA2B,EAAA;MArDzD;QAuDgB,yBAAyB,EAAA;EAvDzC;IA8DQ,iBAAiB,EAAA;IA9DzB;MAgEY,YAAY;MACZ,gCAAgC;MAChC,cAAc;MACd,cAAc;MACd,kBAAkB,EAAA;IApE9B;MAwEY,gBAAgB,EAAA;MAxE5B;QA0EgB,aAAa;QACb,mBAAmB;QACnB,kBAAkB,EAAA;QA5ElC;UA8EoB,kBAAkB,EAAA;IA9EtC;MAoFY,WAAW;MACX,gBAAgB;MAChB,iBAAiB,EAAA;MAtF7B;QAwFgB,aAAa;QACb,8BAA8B;QAC9B,mBAAmB,EAAA;QA1FnC;UA4FoB,sBAAsB;UACtB,iBAAiB,EAAA","sourcesContent":["#fileSubscriptionTabView {\n\n    /* utilize */\n    .icon {\n        display: inline-block;\n    }\n    .msg {\n        color: #000;\n        font-size: 13px;\n        padding: 2px;\n        margin-left: 5px;\n        &.success {\n            color: #fff;\n            background-color: #47a447;\n        }\n        &.error {\n            color: #fff;\n            background-color: #d2322d;\n        }\n    }\n    .lasttime {\n        font-size: 13px;\n    }\n\n    .itemEntry {\n        display: flex;\n        align-items: center;\n        justify-content: space-between;\n\n        .entryAvatar, button {\n            width: 32px;\n            height: 32px;\n            border-radius: 50%;\n        }\n        .entryAvatarClose { background-color: #ef5350; }\n        .entryAvatarOpen { background-color: #8bc34a; }\n        .entryAvatarInvaild { background-color: gray; }\n        .entryDesc {\n            display: flex;\n            flex-direction: column;\n            padding: 8px;\n            line-height: 1.2em;\n            overflow: hidden;\n            div {\n                font-size: 12.5px;\n                color: var(--color-text-maxcontrast);\n            }\n        }\n        button.entryEdit {\n            background-color: inherit;\n            border: none;\n            margin-left: auto;\n            transition: all .05s ease-in-out;\n            &:enabled:hover { background-color: lightgrey; }\n            &.rotate {\n                transform: rotate(180deg);\n            }\n        }\n    }\n\n    ul {\n        // display: none;\n        margin-left: 32px;\n        &::after {\n            content: \" \";\n            border-bottom: 2px solid #e0e0e0;\n            display: block;\n            margin: 30px 0;\n            position: relative;\n        }\n\n        li {\n            margin-top: 25px;\n            & > div:first-child {\n                display: flex;\n                align-items: center;\n                margin-bottom: 5px;\n                .icon {\n                    margin-right: 10px;\n                }\n            }\n        }\n\n        textarea {\n            width: 100%;\n            resize: vertical;\n            max-height: 400px;\n            & ~ div {\n                display: flex;\n                justify-content: space-between;\n                align-items: center;\n                .setDescr {\n                    justify-self: flex-end;\n                    margin-left: auto;\n                }\n            }\n\n        }\n    }\n}\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
@@ -600,9 +600,14 @@ __webpack_require__.r(__webpack_exports__);
           params['lastCancelTime'] = subscr.last_cancel_time; // Y-m-d H:i
         }
 
-        return OCA.FileSubscription.Templates['sidebar-tabview'](params);
+        return OCA.FileSubscription.Templates['sidebar-vaildItem'](params);
       },
-      $itemContent_invaild: function $itemContent_invaild(subscr) {// return
+      $itemContent_invaild: function $itemContent_invaild(subscr) {
+        var params = {
+          shareId: subscr.share_id,
+          labelName: subscr.share_label
+        };
+        return OCA.FileSubscription.Templates['sidebar-invaildItem'](params);
       }
     },
 
@@ -620,7 +625,9 @@ __webpack_require__.r(__webpack_exports__);
         'change input[name=subscribable]': '_onSubscrSetting',
         'click button.setDescr': '_onSubscrSetting',
         'click button.sendSubscrMail': '_onSendMailEvent',
-        'click button.cancelSubscr': '_onCancelEvent'
+        'click button.cancelSubscr': '_onCancelEvent',
+        'click button.downloadLog': '_onLogDownloadEvent',
+        'click button.deleteLog': '_onLogDeletelEvent'
       });
     },
     // 初始化資料：分享連結+訂閱資訊
@@ -661,24 +668,17 @@ __webpack_require__.r(__webpack_exports__);
       if (!obj || !obj.data) $wrapper.html(templates.getLinkFail());else if (obj.data.length < 1) $wrapper.html(templates.noLink());else {
         for (var idx in obj.data) {
           var row = obj.data[idx];
+          var itemWrapper = templates.$item(row.subscription.share_id);
+          var selector = ".item[share-id=".concat(row.subscription.share_id, "]");
+          var itemContent = row.sharing ? templates.$itemContent_vaild(row.sharing, row.subscription) : templates.$itemContent_invaild(row.subscription); // 避免重複 render
 
-          if (row.sharing) {
-            var itemWrapper = templates.$item(row.subscription.share_id);
-            var itemContent = templates.$itemContent_vaild(row.sharing, row.subscription);
-            var selector = ".item[share-id=".concat(row.subscription.share_id, "]"); // 避免重複 render
+          if ($(selector).length === 0) {
+            $wrapper.append(itemWrapper);
+          }
 
-            if ($(selector).length === 0) {
-              $wrapper.append(itemWrapper);
-            }
-
-            if ($(selector).children().length === 0) {
-              $(selector).append(itemContent);
-              $(selector).find('button.entryEdit').click();
-            }
-          } else {// typeof row.sharing == 'undefined'
-            // const itemWrapper = templates.$item(row.subscription.share_id)
-            // const itemContent = templates.$itemContent_invaild(row.subscription)
-            // const selector = `.item[share-id=${row.subscription.share_id}]`
+          if ($(selector).children().length === 0) {
+            $(selector).append(itemContent);
+            $(selector).find('button.entryEdit').click();
           }
         }
       }
@@ -833,6 +833,36 @@ __webpack_require__.r(__webpack_exports__);
       };
 
       OC.dialogs.confirm('系統將發送取消通知給訂閱者，並移除所有訂閱者', '確定清除訂閱？', confirmed);
+    },
+    // 已失效訂閱, 下載訂閱紀錄
+    _onLogDownloadEvent: function _onLogDownloadEvent(e) {// const shareId = $(e.target).closest('.item').attr('share-id')
+    },
+    // 已失效訂閱, 刪除訂閱紀錄
+    _onLogDeletelEvent: function _onLogDeletelEvent(e) {
+      var $formElements = $('.item[share-id]').find('button, input, textarea');
+      $formElements.attr('disabled', 'disabled');
+      var self = this;
+
+      var confirmed = function confirmed(confirm) {
+        if (!confirm) {
+          $formElements.removeAttr('disabled');
+          return;
+        }
+
+        var shareId = $(e.target).closest('.item').attr('share-id');
+        $.ajax({
+          context: self,
+          url: OC.generateUrl("/apps/".concat(self.appId, "/log/").concat(shareId)),
+          type: 'DELETE'
+        }).done(function (resp) {
+          $(".item[share-id = ".concat(shareId, "]")).remove();
+        }).always(function (resp) {
+          $formElements.removeAttr('disabled');
+          self.render();
+        });
+      };
+
+      OC.dialogs.confirm('確定刪除訂閱紀錄？', '確認', confirmed);
     }
   });
   OCA.FileSubscription.TabView = TabView;

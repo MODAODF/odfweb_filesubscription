@@ -58,4 +58,17 @@ class SubscriptionMapper extends QBMapper {
 		return $this->findEntities($query);
 	}
 
+	/**
+	 * 刪除訂閱資料
+	 * @param string $subscrId
+	 */
+	public function deleteById(string $subscrId) {
+		$query = $this->db->getQueryBuilder();
+		$query->delete($this->tableName)
+			->where(
+				$query->expr()->eq('id', $query->createNamedParameter($subscrId))
+			);
+		return $query->execute();
+	}
+
 }

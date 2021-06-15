@@ -254,4 +254,13 @@ class Manager {
 		return $log;
 	}
 
+	/**
+	 * 刪除訂閱和紀錄
+	 * @param int $subscrId
+	 */
+	public function deleteBySubscrId(int $subscrId) {
+		$this->subscriptionMapper->deleteById($subscrId);
+		$this->logMapper->deleteBySubscrId($subscrId);
+	}
+
 }

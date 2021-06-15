@@ -10,7 +10,10 @@ return [
 		['name' => 'subscribe#getSubscription', 'url' => '/subscribe/{shareId}', 'verb' => 'GET'],
 		['name' => 'subscribe#addSubscriber', 'url' => '/subscribe', 'verb' => 'POST'],
 		['name' => 'subscribe#removeSubscriber', 'url' => '/subscribe', 'verb' => 'DELETE'],
-
 		['name' => 'subscribe#getState', 'url' => '/subscribe/state/{token}', 'verb' => 'GET'],
+
+		['name' => 'log#download', 'url' => '/log/download/{shareId}', 'verb' => 'GET'],
+		['name' => 'log#deleteAll', 'url' => '/log/{shareId}', 'verb' => 'DELETE'],
+
 	]
 ];

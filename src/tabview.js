@@ -51,10 +51,14 @@ import '../css/tabview.scss'
 				if (subscr.last_cancel_time) {
 					params['lastCancelTime'] = subscr.last_cancel_time // Y-m-d H:i
 				}
-				return OCA.FileSubscription.Templates['sidebar-tabview'](params)
+				return OCA.FileSubscription.Templates['sidebar-vaildItem'](params)
 			},
 			$itemContent_invaild(subscr) {
-				// return
+				const params = {
+					shareId: subscr.share_id,
+					labelName: subscr.share_label,
+				}
+				return OCA.FileSubscription.Templates['sidebar-invaildItem'](params)
 			}
 		},
 
@@ -72,6 +76,8 @@ import '../css/tabview.scss'
 				'click button.setDescr': '_onSubscrSetting',
 				'click button.sendSubscrMail': '_onSendMailEvent',
 				'click button.cancelSubscr': '_onCancelEvent',
+				'click button.downloadLog': '_onLogDownloadEvent',
+				'click button.deleteLog': '_onLogDeletelEvent',
 			})
 		},
 
@@ -114,24 +120,17 @@ import '../css/tabview.scss'
 				for (const idx in obj.data) {
 					const row = obj.data[idx]
 
-					if (row.sharing) {
-						const itemWrapper = templates.$item(row.subscription.share_id)
-						const itemContent = templates.$itemContent_vaild(row.sharing, row.subscription)
-						const selector = `.item[share-id=${row.subscription.share_id}]`
+					const itemWrapper = templates.$item(row.subscription.share_id)
+					const selector = `.item[share-id=${row.subscription.share_id}]`
+					const itemContent = (row.sharing) ? templates.$itemContent_vaild(row.sharing, row.subscription) : templates.$itemContent_invaild(row.subscription)
 
-						// 避免重複 render
-						if ($(selector).length === 0) {
-							$wrapper.append(itemWrapper)
-						}
-						if ($(selector).children().length === 0) {
-							$(selector).append(itemContent)
-							$(selector).find('button.entryEdit').click()
-						}
-					} else {
-						// typeof row.sharing == 'undefined'
-						// const itemWrapper = templates.$item(row.subscription.share_id)
-						// const itemContent = templates.$itemContent_invaild(row.subscription)
-						// const selector = `.item[share-id=${row.subscription.share_id}]`
+					// 避免重複 render
+					if ($(selector).length === 0) {
+						$wrapper.append(itemWrapper)
+					}
+					if ($(selector).children().length === 0) {
+						$(selector).append(itemContent)
+						$(selector).find('button.entryEdit').click()
 					}
 
 				}
@@ -274,6 +273,37 @@ import '../css/tabview.scss'
 			}
 
 			OC.dialogs.confirm('系統將發送取消通知給訂閱者，並移除所有訂閱者', '確定清除訂閱？', confirmed)
+		},
+
+		// 已失效訂閱, 下載訂閱紀錄
+		_onLogDownloadEvent(e) {
+			const shareId = $(e.target).closest('.item').attr('share-id')
+			console.debug('[hi] _onLogDownloadEvent shareId', shareId)
+		},
+
+		// 已失效訂閱, 刪除訂閱紀錄
+		_onLogDeletelEvent(e) {
+			const $formElements = $('.item[share-id]').find('button, input, textarea')
+			$formElements.attr('disabled', 'disabled')
+			const self = this
+			const confirmed = function(confirm) {
+				if (!confirm) {
+					$formElements.removeAttr('disabled')
+					return
+				}
+				const shareId = $(e.target).closest('.item').attr('share-id')
+				$.ajax({
+					context: self,
+					url: OC.generateUrl(`/apps/${self.appId}/log/${shareId}`),
+					type: 'DELETE',
+				}).done(function(resp) {
+					$(`.item[share-id = ${shareId}]`).remove()
+				}).always(function(resp) {
+					$formElements.removeAttr('disabled')
+					self.render()
+				})
+			}
+			OC.dialogs.confirm('確定刪除訂閱紀錄？', '確認', confirmed)
 		},
 
 	})

@@ -220,6 +220,7 @@ class SubscribeController extends Controller {
 	protected function formatDataForFE(Subscription $subscription): array {
 		$result = [
 			'share_id'	    => $subscription->getShareId(),
+			'share_label'   => $subscription->getShareLabel(),
 			'enabled'       => $subscription->getEnabled(),
 			'message'	    => $subscription->getMessage(), // $subscription->getParsedMessage()
 			'subscriberNum' => 0,

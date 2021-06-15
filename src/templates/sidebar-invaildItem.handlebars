@@ -1,0 +1,28 @@
+{{!-- <div class="item" share-id={{shareId}}> </div>--}}
+
+    <div class="itemEntry">
+        <div class="entryAvatar entryAvatarInvaild icon icon-public-white"></div>
+        <div class="entryDesc">
+            <h5><b>分享連結{{shareId}}
+                {{#if labelName}}
+                (<span>{{labelName}}</span>)
+                {{/if}}
+            </b></h5>
+            <div>分享連結已刪除</div>
+        </div>
+        <button class="entryEdit icon icon-caret-dark rotate"></button>
+    </div>
+
+    <ul>
+
+        <li>
+            <div>此分享連已刪除，可下載通知說明紀錄或刪除訂閱。</div>
+            <div>
+                <button class="downloadLog" type="button">下載通知紀錄</button>
+            </div>
+            <div>
+                <button class="deleteLog" type="button">刪除訂閱</button>
+            </div>
+        </li>
+
+    </ul>

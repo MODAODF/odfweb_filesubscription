@@ -12,7 +12,32 @@ templates['sharedfile-header'] = template({"compiler":[8,">= 4.3.0"],"main":func
     + container.escapeExpression(((helper = (helper = lookupProperty(helpers,"placeholder") || (depth0 != null ? lookupProperty(depth0,"placeholder") : depth0)) != null ? helper : container.hooks.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : (container.nullContext || {}),{"name":"placeholder","hash":{},"data":data,"loc":{"start":{"line":9,"column":58},"end":{"line":9,"column":73}}}) : helper)))
     + "\">\n            <label for=\"submit-mail\" class=\"icon-confirm\"></label>\n        </form>\n        <div><a id=\"unsubscr\">unsubscribe</a></div>\n        <div><span class=\"msg hidden\"></span></div>\n    </div>\n</div>\n";
 },"useData":true});
-templates['sidebar-tabview'] = template({"1":function(container,depth0,helpers,partials,data) {
+templates['sidebar-invaildItem'] = template({"1":function(container,depth0,helpers,partials,data) {
+    var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
+        if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+          return parent[propertyName];
+        }
+        return undefined
+    };
+
+  return "                (<span>"
+    + container.escapeExpression(((helper = (helper = lookupProperty(helpers,"labelName") || (depth0 != null ? lookupProperty(depth0,"labelName") : depth0)) != null ? helper : container.hooks.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : (container.nullContext || {}),{"name":"labelName","hash":{},"data":data,"loc":{"start":{"line":8,"column":23},"end":{"line":8,"column":36}}}) : helper)))
+    + "</span>)\n";
+},"compiler":[8,">= 4.3.0"],"main":function(container,depth0,helpers,partials,data) {
+    var stack1, helper, alias1=depth0 != null ? depth0 : (container.nullContext || {}), lookupProperty = container.lookupProperty || function(parent, propertyName) {
+        if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
+          return parent[propertyName];
+        }
+        return undefined
+    };
+
+  return "\n    <div class=\"itemEntry\">\n        <div class=\"entryAvatar entryAvatarInvaild icon icon-public-white\"></div>\n        <div class=\"entryDesc\">\n            <h5><b>分享連結"
+    + container.escapeExpression(((helper = (helper = lookupProperty(helpers,"shareId") || (depth0 != null ? lookupProperty(depth0,"shareId") : depth0)) != null ? helper : container.hooks.helperMissing),(typeof helper === "function" ? helper.call(alias1,{"name":"shareId","hash":{},"data":data,"loc":{"start":{"line":6,"column":23},"end":{"line":6,"column":34}}}) : helper)))
+    + "\n"
+    + ((stack1 = lookupProperty(helpers,"if").call(alias1,(depth0 != null ? lookupProperty(depth0,"labelName") : depth0),{"name":"if","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data,"loc":{"start":{"line":7,"column":16},"end":{"line":9,"column":23}}})) != null ? stack1 : "")
+    + "            </b></h5>\n            <div>分享連結已刪除</div>\n        </div>\n        <button class=\"entryEdit icon icon-caret-dark rotate\"></button>\n    </div>\n\n    <ul>\n\n        <li>\n            <div>此分享連已刪除，可下載通知說明紀錄或刪除訂閱。</div>\n            <div>\n                <button class=\"downloadLog\" type=\"button\">下載通知紀錄</button>\n            </div>\n            <div>\n                <button class=\"deleteLog\" type=\"button\">刪除訂閱</button>\n            </div>\n        </li>\n\n    </ul>\n";
+},"useData":true});
+templates['sidebar-vaildItem'] = template({"1":function(container,depth0,helpers,partials,data) {
     var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
         if (Object.prototype.hasOwnProperty.call(parent, propertyName)) {
           return parent[propertyName];
