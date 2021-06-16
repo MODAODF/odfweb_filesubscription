@@ -12,7 +12,8 @@ return [
 		['name' => 'subscribe#removeSubscriber', 'url' => '/subscribe', 'verb' => 'DELETE'],
 		['name' => 'subscribe#getState', 'url' => '/subscribe/state/{token}', 'verb' => 'GET'],
 
-		['name' => 'log#download', 'url' => '/log/download/{shareId}', 'verb' => 'GET'],
+		['name' => 'log#getLog', 'url' => '/log/{shareId}', 'verb' => 'GET'],
+		['name' => 'log#downloadFile', 'url' => '/log/download/{subscrId}', 'verb' => 'GET'],
 		['name' => 'log#deleteAll', 'url' => '/log/{shareId}', 'verb' => 'DELETE'],
 
 	]

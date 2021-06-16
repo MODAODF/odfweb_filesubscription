@@ -277,8 +277,35 @@ import '../css/tabview.scss'
 
 		// 已失效訂閱, 下載訂閱紀錄
 		_onLogDownloadEvent(e) {
+			const $formElements = $('.item[share-id]').find('button, input, textarea')
+			$formElements.attr('disabled', 'disabled')
+
+			const $msg = $(e.target).closest('li').find('.msg')
+			const msgResponse = { status: '', data: { message: '' } }
+
 			const shareId = $(e.target).closest('.item').attr('share-id')
-			console.debug('[hi] _onLogDownloadEvent shareId', shareId)
+			$.ajax({
+				context: this,
+				url: OC.generateUrl(`/apps/${this.appId}/log/${shareId}`),
+				type: 'GET',
+				beforeSend() {
+					OC.msg.startAction($msg, '讀取紀錄...')
+				}
+			}).done(function(resp) {
+				if (typeof resp.data.path != 'undefined') {
+					window.location.href = resp.data.path
+				}
+				msgResponse.status = 'success'
+				msgResponse.data.message = '開始下載'
+			}).fail(function(resp) {
+				msgResponse.data.message = '無法讀取紀錄'
+				if (typeof resp.responseJSON.message != 'undefined') {
+					msgResponse.data.message = resp.responseJSON.message
+				}
+			}).always(function(resp) {
+				OC.msg.finishedAction($msg, msgResponse)
+				$formElements.removeAttr('disabled')
+			})
 		},
 
 		// 已失效訂閱, 刪除訂閱紀錄

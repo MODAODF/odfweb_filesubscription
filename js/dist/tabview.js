@@ -835,7 +835,41 @@ __webpack_require__.r(__webpack_exports__);
       OC.dialogs.confirm('系統將發送取消通知給訂閱者，並移除所有訂閱者', '確定清除訂閱？', confirmed);
     },
     // 已失效訂閱, 下載訂閱紀錄
-    _onLogDownloadEvent: function _onLogDownloadEvent(e) {// const shareId = $(e.target).closest('.item').attr('share-id')
+    _onLogDownloadEvent: function _onLogDownloadEvent(e) {
+      var $formElements = $('.item[share-id]').find('button, input, textarea');
+      $formElements.attr('disabled', 'disabled');
+      var $msg = $(e.target).closest('li').find('.msg');
+      var msgResponse = {
+        status: '',
+        data: {
+          message: ''
+        }
+      };
+      var shareId = $(e.target).closest('.item').attr('share-id');
+      $.ajax({
+        context: this,
+        url: OC.generateUrl("/apps/".concat(this.appId, "/log/").concat(shareId)),
+        type: 'GET',
+        beforeSend: function beforeSend() {
+          OC.msg.startAction($msg, '讀取紀錄...');
+        }
+      }).done(function (resp) {
+        if (typeof resp.data.path != 'undefined') {
+          window.location.href = resp.data.path;
+        }
+
+        msgResponse.status = 'success';
+        msgResponse.data.message = '開始下載';
+      }).fail(function (resp) {
+        msgResponse.data.message = '無法讀取紀錄';
+
+        if (typeof resp.responseJSON.message != 'undefined') {
+          msgResponse.data.message = resp.responseJSON.message;
+        }
+      }).always(function (resp) {
+        OC.msg.finishedAction($msg, msgResponse);
+        $formElements.removeAttr('disabled');
+      });
     },
     // 已失效訂閱, 刪除訂閱紀錄
     _onLogDeletelEvent: function _onLogDeletelEvent(e) {

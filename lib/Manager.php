@@ -263,4 +263,17 @@ class Manager {
 		$this->logMapper->deleteBySubscrId($subscrId);
 	}
 
+	/**
+	 * 取得訂閱紀錄
+	 * @param int $subscrId
+	 */
+	public function getLogsBySubscrId(int $subscrId) {
+		try {
+			$logs = $this->logMapper->getBySubscrId($subscrId);
+		} catch (DoesNotExistException $e) {
+			throw new SubscriptionDoesNotExistException();
+		}
+		return $logs;
+	}
+
 }
