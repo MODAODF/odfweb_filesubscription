@@ -71,8 +71,10 @@ class SubscribeController extends Controller {
 			$respData[$idx]['subscription'] = $this->formatDataForFE($subscr);
 			try {
 				$share = $this->shareApi->getShare((string)$subscr->getShareId()); // DataResponse
-				if($share) $respData[$idx]['sharing'] = $share->getData()[0];
+				$respData[$idx]['sharing'] = $share->getData()[0];
 			} catch (OCSNotFoundException $e) {
+				$subscrLog = $this->manager->getLogsBySubscrId($subscr->getId());
+				$respData[$idx]['hasSubscrLog'] = count($subscrLog) > 0 ? true : false;
 			}
 		}
 		return new DataResponse($respData);

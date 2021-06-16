@@ -42,7 +42,8 @@
                 <span>訂閱郵件</span>
                 <span class="msg hidden"></span>
             </div>
-            <button class="sendSubscrMail" type="button">傳送訂閱郵件({{subscriberNum}})</button>
+            <button class="sendSubscrMail" type="button" {{buttonDisable}}>傳送訂閱郵件({{subscriberNum}})
+            </button>
             <div class="lasttime">
                 {{#if lastEmailTime}}
                 <em>上次傳送於 <span>{{lastEmailTime}}</span></em>
@@ -56,7 +57,7 @@
                 <span>取消訂閱</span>
                 <span class="msg hidden"></span>
             </div>
-            <button class="cancelSubscr" type="button">取消訂閱者({{subscriberNum}})</button>
+            <button class="cancelSubscr" type="button" {{buttonDisable}}>取消訂閱者({{subscriberNum}})</button>
 
             {{#if lastCancelTime}}
             <div class="lasttime"><em>上次取消於 <span>{{lastCancelTime}}</span></em></div>

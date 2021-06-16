@@ -53,11 +53,6 @@ class Manager {
 			throw new SubscriptionDoesNotExistException();
 		}
 
-		if ($isNewShareId) {
-			$subscription = new Subscription();
-			$subscription->setShareId($shareId);
-		}
-
 		if ($val_enabled = $setVal['enabled']) {
 			$subscription->setEnabled( $val_enabled === 'true' ? 1:0 );
 		}
@@ -81,6 +76,14 @@ class Manager {
 
 		if ($setVal['cancelTime']) {
 			$subscription->setLastCancelTime($this->timeFactory->getTime());
+		}
+
+		if ($setVal['fileName']) {
+			$subscription->setFileName($setVal['fileName']);
+		}
+
+		if (isset($setVal['shareLabel'])) {
+			$subscription->setShareLabel($setVal['shareLabel']);
 		}
 
 		if ($subscription instanceof Subscription) {

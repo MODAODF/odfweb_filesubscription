@@ -18,7 +18,8 @@ import '../css/tabview.scss'
 
 		template() {
 			return `<div class="loading icon-loading-small"></div>
-			  <div class="linksWrapper hidden"></div>`
+			  <div class="linksWrapper hidden"></div>
+			  <button class="reloadLinks hidden">重新載入</button>`
 		},
 
 		_sectionTemplates: {
@@ -31,7 +32,7 @@ import '../css/tabview.scss'
 			$item(id) {
 				return `<div class="item" share-id=${id}></div>`
 			},
-			$itemContent_vaild(share, subscr) {
+			$itemContent_vaild(subscr, share) {
 				const params = {
 					shareId: share.id,
 					labelName: share.label,
@@ -40,6 +41,7 @@ import '../css/tabview.scss'
 					entryEnableString: subscr.enabled ? '開放' : '關閉',
 					message: subscr.message,
 					subscriberNum: subscr.subscriberNum,
+					buttonDisable: subscr.subscriberNum > 0 ? '' : 'disabled',
 				}
 
 				if (subscr.last_message_time) {
@@ -53,10 +55,11 @@ import '../css/tabview.scss'
 				}
 				return OCA.FileSubscription.Templates['sidebar-vaildItem'](params)
 			},
-			$itemContent_invaild(subscr) {
+			$itemContent_invaild(subscr, hasLog) {
 				const params = {
 					shareId: subscr.share_id,
 					labelName: subscr.share_label,
+					hasLog,
 				}
 				return OCA.FileSubscription.Templates['sidebar-invaildItem'](params)
 			}
@@ -71,6 +74,7 @@ import '../css/tabview.scss'
 
 			// delegate all btn Events
 			this.delegateEvents({
+				'click button.reloadLinks': 'render',
 				'click button.entryEdit': '_onEntryEdit',
 				'change input[name=subscribable]': '_onSubscrSetting',
 				'click button.setDescr': '_onSubscrSetting',
@@ -96,6 +100,7 @@ import '../css/tabview.scss'
 				},
 				beforeSend() {
 					$('.linksWrapper').hide()
+					$('.reloadLinks').hide()
 					$(this.$el).find('.loading').show()
 				}
 			}).done(function(resp) {
@@ -110,10 +115,10 @@ import '../css/tabview.scss'
 
 		_renderInitData(obj) {
 			const $wrapper = $('.linksWrapper')
-			$('.linksWrapper').children().remove()
+			if ($wrapper.length < 1) return
+			$wrapper.children().remove()
 
 			const templates = this._sectionTemplates
-
 			if (!obj || !obj.data) $wrapper.html(templates.getLinkFail())
 			else if (obj.data.length < 1) $wrapper.html(templates.noLink())
 			else {
@@ -122,7 +127,7 @@ import '../css/tabview.scss'
 
 					const itemWrapper = templates.$item(row.subscription.share_id)
 					const selector = `.item[share-id=${row.subscription.share_id}]`
-					const itemContent = (row.sharing) ? templates.$itemContent_vaild(row.sharing, row.subscription) : templates.$itemContent_invaild(row.subscription)
+					const itemContent = (row.sharing) ? templates.$itemContent_vaild(row.subscription, row.sharing) : templates.$itemContent_invaild(row.subscription, row.hasSubscrLog)
 
 					// 避免重複 render
 					if ($(selector).length === 0) {
@@ -136,6 +141,7 @@ import '../css/tabview.scss'
 				}
 			}
 			$wrapper.show()
+			$('.reloadLinks').show()
 		},
 
 		// Rerender 訂閱資訊
@@ -153,7 +159,7 @@ import '../css/tabview.scss'
 				last_email_time: resp.last_email_time,
 				last_cancel_time: resp.last_cancel_time,
 			}
-			$item.html(this._sectionTemplates.$itemContent_vaild(share, subscr))
+			$item.html(this._sectionTemplates.$itemContent_vaild(subscr, share))
 		},
 
 		// 顯示訂閱設定內容

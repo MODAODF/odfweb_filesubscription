@@ -26,6 +26,10 @@ class ShareHooks {
 			try {
 				$subscription = $manager->getSubscrByShareId($shareId);
 				$emails = $subscription->getEmails();
+
+				$setVal['fileName'] = $share->getNode()->getName();
+				$setVal['shareLabel'] = $share->getLabel();
+				$manager->setSubscription($shareId, $setVal);
 			} catch (SubscriptionDoesNotExistException $e) {
 				return;
 			}
