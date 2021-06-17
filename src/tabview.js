@@ -29,6 +29,9 @@ import '../css/tabview.scss'
 			noLink() {
 				return '<div>沒有分享連結</div>'
 			},
+			notOwner() {
+				return '<div>非檔案擁有者，無訂閱功能</div>'
+			},
 			$item(id) {
 				return `<div class="item" share-id=${id}></div>`
 			},
@@ -104,10 +107,14 @@ import '../css/tabview.scss'
 					$(this.$el).find('.loading').show()
 				}
 			}).done(function(resp) {
-				this._renderInitData({ data: resp })
+				let dataObj = { data: resp }
+				if (typeof resp.result != 'undefined' && !resp.result) {
+					dataObj = { data: null, errorType: 'notOwner' }
+				}
+				this._renderInitData(dataObj)
 			}).fail(function(e) {
 				console.debug('Get InitData fail', e)
-				this._renderInitData({ data: null })
+				this._renderInitData({ data: null, errorType: 'getLinkFail' })
 			}).always(function(resp) {
 				$(this.$el).find('.loading').hide()
 			})
@@ -119,9 +126,15 @@ import '../css/tabview.scss'
 			$wrapper.children().remove()
 
 			const templates = this._sectionTemplates
-			if (!obj || !obj.data) $wrapper.html(templates.getLinkFail())
-			else if (obj.data.length < 1) $wrapper.html(templates.noLink())
-			else {
+			if (!obj || !obj.data) {
+				if (obj.errorType === 'notOwner') {
+					$wrapper.html(templates.notOwner())
+				} else {
+					$wrapper.html(templates.getLinkFail())
+				}
+			} else if (obj.data.length < 1) {
+				$wrapper.html(templates.noLink())
+			} else {
 				for (const idx in obj.data) {
 					const row = obj.data[idx]
 

@@ -573,6 +573,9 @@ __webpack_require__.r(__webpack_exports__);
       noLink: function noLink() {
         return '<div>沒有分享連結</div>';
       },
+      notOwner: function notOwner() {
+        return '<div>非檔案擁有者，無訂閱功能</div>';
+      },
       $item: function $item(id) {
         return "<div class=\"item\" share-id=".concat(id, "></div>");
       },
@@ -652,14 +655,24 @@ __webpack_require__.r(__webpack_exports__);
           $(this.$el).find('.loading').show();
         }
       }).done(function (resp) {
-        this._renderInitData({
+        var dataObj = {
           data: resp
-        });
+        };
+
+        if (typeof resp.result != 'undefined' && !resp.result) {
+          dataObj = {
+            data: null,
+            errorType: 'notOwner'
+          };
+        }
+
+        this._renderInitData(dataObj);
       }).fail(function (e) {
         console.debug('Get InitData fail', e);
 
         this._renderInitData({
-          data: null
+          data: null,
+          errorType: 'getLinkFail'
         });
       }).always(function (resp) {
         $(this.$el).find('.loading').hide();
@@ -670,7 +683,16 @@ __webpack_require__.r(__webpack_exports__);
       if ($wrapper.length < 1) return;
       $wrapper.children().remove();
       var templates = this._sectionTemplates;
-      if (!obj || !obj.data) $wrapper.html(templates.getLinkFail());else if (obj.data.length < 1) $wrapper.html(templates.noLink());else {
+
+      if (!obj || !obj.data) {
+        if (obj.errorType === 'notOwner') {
+          $wrapper.html(templates.notOwner());
+        } else {
+          $wrapper.html(templates.getLinkFail());
+        }
+      } else if (obj.data.length < 1) {
+        $wrapper.html(templates.noLink());
+      } else {
         for (var idx in obj.data) {
           var row = obj.data[idx];
           var itemWrapper = templates.$item(row.subscription.share_id);
@@ -687,6 +709,7 @@ __webpack_require__.r(__webpack_exports__);
           }
         }
       }
+
       $wrapper.show();
       $('.reloadLinks').show();
     },

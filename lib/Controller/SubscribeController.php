@@ -18,6 +18,7 @@ use OCA\FileSubscription\Model\Subscription;
 use OCP\Share\IShare;
 use OCP\Share\IManager as ShareManager;
 use OCP\Share\Exceptions\ShareNotFound;
+use OC\Files\Filesystem;
 
 class SubscribeController extends Controller {
 
@@ -57,8 +58,15 @@ class SubscribeController extends Controller {
 	 * @NoAdminRequired
 	 */
 	public function index(int $fileId, string $path) {
-		if(!$this->shareApi) return new NotFoundResponse();
 		$uid = \OC::$server->getUserSession()->getUser()->getUID();
+
+		// 確認是否為檔案擁有者
+		$fileinfo = Filesystem::getFileInfo(json_decode($path));
+		if ($fileinfo->getOwner()->getuid() !== $uid) {
+			return new DataResponse(['result' => false, 'message' => 'not file owner']);
+		}
+
+		if(!$this->shareApi) return new NotFoundResponse();
 		$this->refresh($uid, $fileId, json_decode($path));
 
 		// 取得 user 在這個檔案建立的訂閱
