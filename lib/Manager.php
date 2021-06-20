@@ -42,6 +42,7 @@ class Manager {
 	/**
 	 * 設定訂閱資訊
 	 * @param int $shareId
+	 * @param array $setVal
 	 * @return Subscription
 	 * @throws SubscriptionDoesNotExistException
 	 */
@@ -99,7 +100,6 @@ class Manager {
 	 * @throws SubscriptionDoesNotExistException
 	 */
 	public function getSubscrByShareId(int $shareId): Subscription {
-		// TODO 只有admin或 有ShareLink權限的user 可以取得
 		try {
 			$subscription = $this->subscriptionMapper->getByShareId($shareId);
 		} catch (DoesNotExistException $e) {
@@ -141,7 +141,6 @@ class Manager {
 	/**
 	 * 取得單一分享連結 是否啟用
 	 * @param int $shareId
-	 * @return int $isEnable
 	 */
 	public function getEnabled(int $shareId) {
 		try {
@@ -244,9 +243,7 @@ class Manager {
 
 	/**
 	 * 寫入一筆訂閱說明紀錄
-	 * @param int $subscrId
 	 * @param Subscription $subscr
-	 * @param string $ownerUid
 	 */
 	public function writeSubscrLog(Subscription $subscr) {
 		$log = new SubscriptionLog();
@@ -278,5 +275,4 @@ class Manager {
 		}
 		return $logs;
 	}
-
 }

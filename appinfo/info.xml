@@ -13,23 +13,7 @@
 	<category>files</category>
 	<category>social</category>
 	<website>https://ossii.com.tw</website>
-
 	<dependencies>
 		<nextcloud min-version="20" max-version="20"/>
 	</dependencies>
-
-	<!-- <activity>
-		<settings>
-			<setting>OCA\FileSubscription\Activity\Setting</setting>
-		</settings>
-
-		<filters>
-			<filter>OCA\FileSubscription\Activity\Filter</filter>
-		</filters>
-
-		<providers>
-			<provider>OCA\FileSubscription\Activity\Provider</provider>
-		</providers>
-	</activity> -->
-
 </info>

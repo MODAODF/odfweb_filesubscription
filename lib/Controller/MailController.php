@@ -26,7 +26,7 @@ class MailController extends Controller {
 	/** @var IMailer */
 	private $mailer;
 	/** @var IL10N */
-	private $l10n;
+	private $l;
 	/** @var Manager */
 	private $manager;
 	/** @var ShareManager */
@@ -37,7 +37,7 @@ class MailController extends Controller {
 								IRequest $request,
 								IURLGenerator $urlGenerator,
 								IMailer $mailer,
-								IL10N $l10n,
+								IL10N $l,
 								Manager $manager,
 								ShareManager $shareManager) {
 		parent::__construct($AppName, $request);
@@ -45,7 +45,7 @@ class MailController extends Controller {
 		$this->config = $config;
 		$this->urlGenerator = $urlGenerator;
 		$this->mailer = $mailer;
-		$this->l10n = $l10n;
+		$this->l = $l;
 		$this->manager = $manager;
 		$this->shareManager = $shareManager;
 	}
@@ -65,10 +65,10 @@ class MailController extends Controller {
 			$message->useTemplate($template);
 			$errors = $this->mailer->send($message);
 			if (!empty($errors)) {
-				throw new \RuntimeException($this->l10n->t('Email could not be sent. Check your mail server log.'));
+				throw new \RuntimeException($this->l->t('Email could not be sent. Check your mail server log.'));
 			}
 			$result['result'] = true;
-			$result['message'] = $this->l10n->t('Email sent.');
+			$result['message'] = $this->l->t('Email sent.');
 		} catch (\Exception $e) {
 			$result['result'] = false;
 			$result['message'] = $e->getMessage();
@@ -89,7 +89,7 @@ class MailController extends Controller {
 		} catch (SubscriptionDoesNotExistException $e) {
 			return new DataResponse([
 				'data' => [
-					'message' => $this->l10n->t('沒有訂閱者'),
+					'message' => $this->l->t('No subscribers'),
 				],
 				'result' => false
 			], Http::STATUS_BAD_REQUEST);
@@ -100,28 +100,33 @@ class MailController extends Controller {
 		// Send mail
         $emailArr = \json_decode($subscription->getEmails());
         foreach ($emailArr as $email) {
-			$displayName = $email; // TODO 沒有訂閱者名稱
+			$displayName = $email;
 			$sendInfos[$displayName] = $this->sendMail($email, $displayName, $template);
         }
 
-		$sentCount = 0; // 傳送成功的數量
+		$sentCount = 0;
 		foreach($sendInfos as $displayName => $infos) {
 			if($infos['result']) $sentCount ++;
 		}
-
 		$setVal['updateEmailTime'] = true;
 		$subscription = $this->manager->setSubscription($shareId, $setVal);
-
 		$this->manager->writeSubscrLog($subscription);
-
-		return new DataResponse([
-			'data' => [
-				'message' => $this->l10n->t('%s email sent.', [$sentCount]),
-				'infos' => $sendInfos,
-				'lastEmailTime' => date('Y-m-d H:i', $subscription->getLastEmailTime()),
-			],
-			'result' => true
-		], Http::STATUS_OK);
+		if ($sentCount === 0) {
+			return new DataResponse([
+				'data' => [
+					'message' => $this->l->t('A problem occurred while sending the email. Please revise your settings.'),
+				], 'result' => false
+			], Http::STATUS_BAD_REQUEST);
+		} else {
+			return new DataResponse([
+				'data' => [
+					'message' => $this->l->t('%s email sent.', [$sentCount]),
+					'infos' => $sendInfos,
+					'lastEmailTime' => date('Y-m-d H:i', $subscription->getLastEmailTime()),
+				],
+				'result' => true
+			]);
+		}
 	}
 
 	/**
@@ -131,20 +136,17 @@ class MailController extends Controller {
 	 * @NoAdminRequired
 	 */
 	public function cancelMail(int $shareId) {
-
 		try {
 			$subscription = $this->manager->getSubscrByShareId($shareId);
 		} catch (SubscriptionDoesNotExistException $e) {
 			return new DataResponse([
 				'data' => [
-					'message' => $this->l10n->t('沒有訂閱者'),
+					'message' => $this->l->t('No subscribers'),
 				],
 				'result' => false
 			], Http::STATUS_BAD_REQUEST);
 		}
-
 		$template = $this->mailTemplate_cancel($shareId, $subscription);
-
 		// Send mail
         $emailArr = \json_decode($subscription->getEmails());
         foreach ($emailArr as $email) {
@@ -156,14 +158,22 @@ class MailController extends Controller {
 		foreach($sendInfos as $displayName => $infos) {
 			if($infos['result']) $sentCount ++;
 		}
-
-		return new DataResponse([
-			'data' => [
-				'message' => $this->l10n->t('%s email sent.', [$sentCount]),
-				'infos' => $sendInfos,
-			],
-			'result' => true
-		], Http::STATUS_OK);
+		if ($sentCount === 0) {
+			return new DataResponse([
+				'data' => [
+					'message' => $this->l->t('A problem occurred while sending the email. Please revise your settings.'),
+				], 'result' => false
+			], Http::STATUS_BAD_REQUEST);
+		} else {
+			return new DataResponse([
+				'data' => [
+					'message' => $this->l->t('%s email sent.', [$sentCount]),
+					'infos' => $sendInfos,
+					'lastEmailTime' => date('Y-m-d H:i', $subscription->getLastEmailTime()),
+				],
+				'result' => true
+			]);
+		}
 	}
 
 	/**
@@ -171,25 +181,24 @@ class MailController extends Controller {
 	 * @return IEMailTemplate
 	 */
 	private function mailTemplate_update($shareId, $subscription):IEMailTemplate {
-
 		$ocDefaults = new \OC_Defaults;
 		$serverName = $this->config->getAppValue('theming', 'name', $ocDefaults->getTitle());
 
 		$template = $this->mailer->createEMailTemplate('filesubscription.newVersion');
-		$template->setSubject("[$serverName] 文件訂閱通知");
+		$template->setSubject('['.$serverName.'] ' . $this->l->t('Subscribe notification'));
 		$template->addHeader();
-		$template->addHeading('文件訂閱通知'.' ('.$shareId.')');
+		$template->addHeading($this->l->t('Subscribe notification'));
 
 		$plainText = $subscription->getMessage();
 		if (!$plainText || empty($plainText)) {
-			$template->addBodyText('您訂閱的文件已發布新版本。');
+			$template->addBodyText($this->l->t('A new version of the document you subscribed to has been released.'));
 		} else {
 			$text = $subscription->getParsedMessage();
 			$template->addBodyText($text, $plainText);
 		}
 
 		if($shareLink = $this->getShareLink($shareId) ?? false) {
-			$template->addBodyButton($this->l10n->t('Open File'), $shareLink);
+			$template->addBodyButton($this->l->t('Open File'), $shareLink);
 		}
 		$template->addFooter();
 		return $template;
@@ -204,10 +213,10 @@ class MailController extends Controller {
 		$serverName = $this->config->getAppValue('theming', 'name', $ocDefaults->getTitle());
 
 		$template = $this->mailer->createEMailTemplate('filesubscription.newVersion');
-		$template->setSubject("[$serverName] 文件取消訂閱通知");
+		$template->setSubject('['.$serverName.'] ' . $this->l->t('Subscribe cancel notification'));
 		$template->addHeader();
-		$template->addHeading('文件取消訂閱通知'.' ('.$shareId.')');
-		$template->addBodyText('文件擁有者或文件分享者已取消文件訂閱。');
+		$template->addHeading($this->l->t('Subscribe cancel notification'));
+		$template->addBodyText($this->l->t('The subscription has been cancelled by the file owner.'));
 		$template->addFooter();
 		return $template;
 	}

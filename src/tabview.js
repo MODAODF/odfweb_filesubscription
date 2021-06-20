@@ -19,18 +19,21 @@ import '../css/tabview.scss'
 		template() {
 			return `<div class="loading icon-loading-small"></div>
 			  <div class="linksWrapper hidden"></div>
-			  <button class="reloadLinks hidden">重新載入</button>`
+			  <button class="reloadLinks hidden">${t(this.appId, 'Reload')}</button>`
 		},
 
 		_sectionTemplates: {
+			l10n(str) {
+				return t('filesubscription', str)
+			},
 			getLinkFail() {
-				return '<div>無法取得分享連結</div>'
+				return `<div>${this.l10n('Unable to get share link')}</div>`
 			},
 			noLink() {
-				return '<div>沒有分享連結</div>'
+				return `<div>${this.l10n('No share link')}</div>`
 			},
 			notOwner() {
-				return '<div>非檔案擁有者，無訂閱功能</div>'
+				return `<div>${this.l10n('Not file owner')}</div>`
 			},
 			$item(id) {
 				return `<div class="item" share-id=${id}></div>`
@@ -41,10 +44,22 @@ import '../css/tabview.scss'
 					labelName: share.label,
 					isEnabled: subscr.enabled, // int
 					entryAvatarCssClass: subscr.enabled ? 'entryAvatarOpen' : 'entryAvatarClose',
-					entryEnableString: subscr.enabled ? '開放' : '關閉',
 					message: subscr.message,
 					subscriberNum: subscr.subscriberNum,
 					buttonDisable: subscr.subscriberNum > 0 ? '' : 'disabled',
+
+					strEntrySubscriberNum: this.l10n('Subscribers'),
+					strEntryEnable: this.l10n(subscr.enabled ? 'Enabled' : 'Disabled'),
+					strEntryTitle: this.l10n('Share Link'),
+					strLiTitleEdit: this.l10n('Notification message'),
+					strLastUpdateOn: this.l10n('Last updated on'),
+					strSave: this.l10n('Save'),
+					strLiTitleMail: this.l10n('Email subscription'),
+					strSend: this.l10n('Send'),
+					strLastEmailOn: this.l10n('Last notified on'),
+					strLiTitleCancel: this.l10n('Cancel subscribers'),
+					strCancel: this.l10n('Cancel'),
+					strLastCancelOn: this.l10n('Last cancelled on'),
 				}
 
 				if (subscr.last_message_time) {
@@ -63,6 +78,11 @@ import '../css/tabview.scss'
 					shareId: subscr.share_id,
 					labelName: subscr.share_label,
 					hasLog,
+					strEntryTitle: this.l10n('Share Link'),
+					strEntryDeleted: this.l10n('Deleted'),
+					strBtnLog: this.l10n('Download notification log'),
+					strNoLog: this.l10n('There is no notification log for this share link.'),
+					strBtnDelete: this.l10n('Delete'),
 				}
 				return OCA.FileSubscription.Templates['sidebar-invaildItem'](params)
 			}
@@ -113,7 +133,6 @@ import '../css/tabview.scss'
 				}
 				this._renderInitData(dataObj)
 			}).fail(function(e) {
-				console.debug('Get InitData fail', e)
 				this._renderInitData({ data: null, errorType: 'getLinkFail' })
 			}).always(function(resp) {
 				$(this.$el).find('.loading').hide()
@@ -150,7 +169,6 @@ import '../css/tabview.scss'
 						$(selector).append(itemContent)
 						$(selector).find('button.entryEdit').click()
 					}
-
 				}
 			}
 			$wrapper.show()
@@ -194,12 +212,13 @@ import '../css/tabview.scss'
 			const msgResponse = { status: '', data: { message: '' } }
 
 			$.ajax({
-				url: OC.generateUrl('/apps/filesubscription/mail/update'),
+				context: this,
+				url: OC.generateUrl(`/apps/${this.appId}/mail/update`),
 				type: 'POST',
 				data: { shareId },
 				beforeSend() {
 					$formElements.attr('disabled', 'disabled')
-					OC.msg.startAction($msg, '傳送中...')
+					OC.msg.startAction($msg, t(this.appId, 'Sending...'))
 				}
 			}).done(function(resp) {
 				msgResponse.status = 'success'
@@ -208,11 +227,12 @@ import '../css/tabview.scss'
 				if ($timeDiv.find('em').length > 0) {
 					$timeDiv.find('em > span').text(resp.data.lastEmailTime)
 				} else {
-					$timeDiv.append(`<em>上次傳送於 <span>${resp.data.lastEmailTime}</span></em>`)
+					$timeDiv.append(`<em>${t(this.appId, 'Last notified on')} <span>${resp.data.lastEmailTime}</span></em>`)
 				}
-			}).fail(function(e) {
-				msgResponse.data.message = '郵件寄送失敗'
-				console.debug('SendMail ajax fail', e)
+			}).fail(function(resp) {
+				if (typeof resp.responseJSON.data.message != 'undefined') {
+					msgResponse.data.message += resp.responseJSON.data.message
+				}
 			}).always(function() {
 				OC.msg.finishedAction($msg, msgResponse)
 				$formElements.removeAttr('disabled')
@@ -234,18 +254,17 @@ import '../css/tabview.scss'
 
 			$.ajax({
 				context: this,
-				url: OC.generateUrl('/apps/filesubscription/update/' + shareId),
+				url: OC.generateUrl(`/apps/${this.appId}/update/${shareId}`),
 				type: 'POST',
 				data: { shareId, setVal },
 				beforeSend() {
 					$formElements.attr('disabled', 'disabled')
-					OC.msg.startAction($msg, '設定中...')
+					OC.msg.startAction($msg, t(this.appId, 'Setting...'))
 				}
 			}).done(function(resp) {
 				this._rerenderItemData(resp)
 			}).fail(function(e) {
-				msgResponse.data.message = '設定失敗'
-				console.debug('filesubscription Setting fail', e)
+				msgResponse.data.message = t(this.appId, 'Failed')
 			}).always(function() {
 				OC.msg.finishedAction($msg, msgResponse)
 				$formElements.removeAttr('disabled')
@@ -268,30 +287,32 @@ import '../css/tabview.scss'
 
 				$.ajax({
 					context: self,
-					url: OC.generateUrl('/apps/filesubscription/cancel'),
+					url: OC.generateUrl(`/apps/${self.appId}/cancel`),
 					type: 'POST',
 					data: {
 						shareId: $(e.target).closest('.item').attr('share-id'),
 					},
 					beforeSend() {
-						OC.msg.startAction($msg, '取消中...')
+						OC.msg.startAction($msg, t(self.appId, 'Setting...'))
 					}
 				}).done(function(resp) {
 					self._rerenderItemData(resp)
 				}).fail(function(resp) {
-					msgResponse.data.message = '無法取消訂閱'
+					msgResponse.data.message = t(self.appId, 'Failed')
 					if (typeof resp.responseJSON.message != 'undefined') {
 						msgResponse.data.message += ': '
 						msgResponse.data.message += resp.responseJSON.message
 					}
-					console.debug('Cancel ajax fail', resp)
 				}).always(function() {
 					OC.msg.finishedAction($msg, msgResponse)
 					$formElements.removeAttr('disabled')
 				})
 			}
-
-			OC.dialogs.confirm('系統將發送取消通知給訂閱者，並移除所有訂閱者', '確定清除訂閱？', confirmed)
+			OC.dialogs.confirm(
+				t(this.appId, 'The system will send a cancellation notice to subscribers and remove all subscribers.'),
+				t(this.appId, 'Please confirm the cancellation'),
+				confirmed
+			)
 		},
 
 		// 已失效訂閱, 下載訂閱紀錄
@@ -308,16 +329,16 @@ import '../css/tabview.scss'
 				url: OC.generateUrl(`/apps/${this.appId}/log/${shareId}`),
 				type: 'GET',
 				beforeSend() {
-					OC.msg.startAction($msg, '讀取紀錄...')
+					OC.msg.startAction($msg, t(this.appId, 'Loading...'))
 				}
 			}).done(function(resp) {
 				if (typeof resp.data.path != 'undefined') {
 					window.location.href = resp.data.path
 				}
 				msgResponse.status = 'success'
-				msgResponse.data.message = '開始下載'
+				msgResponse.data.message = 'OK'
 			}).fail(function(resp) {
-				msgResponse.data.message = '無法讀取紀錄'
+				msgResponse.data.message = t(this.appId, 'Unable to load')
 				if (typeof resp.responseJSON.message != 'undefined') {
 					msgResponse.data.message = resp.responseJSON.message
 				}
@@ -349,7 +370,11 @@ import '../css/tabview.scss'
 					self.render()
 				})
 			}
-			OC.dialogs.confirm('確定刪除訂閱紀錄？', '確認', confirmed)
+			OC.dialogs.confirm(
+				t(this.appId, 'The subscription to the shared link will be deleted.'),
+				t(this.appId, 'Please confirm the removal'),
+				confirmed
+			)
 		},
 
 	})

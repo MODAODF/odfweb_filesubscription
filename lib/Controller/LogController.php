@@ -5,6 +5,7 @@ use OCP\IRequest;
 use OCP\Defaults;
 use OCP\IConfig;
 use OCP\IUser;
+use OCP\IL10N;
 use OCP\IURLGenerator;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
@@ -30,16 +31,21 @@ class LogController extends Controller {
 	/** @var IURLGenerator */
 	private $url;
 
+	/** @var IL10N */
+	private $l;
+
 	public function __construct($AppName,
 								IConfig $config,
 								IRequest $request,
 								Manager $manager,
-								IURLGenerator $url) {
+								IURLGenerator $url,
+								IL10N $l) {
 		parent::__construct($AppName, $request);
 		$this->appName = $AppName;
 		$this->config = $config;
 		$this->manager = $manager;
 		$this->url = $url;
+		$this->l = $l;
 		$this->logFileDir = dirname(__DIR__, 2) . '/logFiles';
 	}
 
@@ -54,17 +60,10 @@ class LogController extends Controller {
 		} catch (SubscriptionDoesNotExistException $e) {
 			return new DataResponse([], Http::STATUS_BAD_REQUEST);
 		}
-		// $user = \OC::$server->getUserSession()->getUser()->getUID();
-		// $owner = $subscription->getOwnerUid();
-		// if ($user !== $owner) {
-		// 	return new DataResponse(['無刪除權限'], Http::STATUS_BAD_REQUEST);
-		// }
-
 		$subscrId = $subscription->getId();
 		$deleted = $this->manager->deleteBySubscrId($subscrId);
 		$logFilePath = $this->logFileDir . '/' . $subscrId . '.txt';
 		if (file_exists($logFilePath)) unlink($logFilePath);
-
 		return new DataResponse([], Http::STATUS_OK);
 	}
 
@@ -81,7 +80,7 @@ class LogController extends Controller {
 			return new DataResponse([], Http::STATUS_BAD_REQUEST);
 		}
 		if (!$subscr || count($logs) < 1) {
-			return new DataResponse(['message' => '無訂閱紀錄'], Http::STATUS_BAD_REQUEST);
+			return new DataResponse(['message' => $this->l->t('No subscription log')], Http::STATUS_BAD_REQUEST);
 		}
 
 		$this->createLogFile($subscr, $logs);
@@ -114,13 +113,13 @@ class LogController extends Controller {
 			}
 		}
 
-		$txt_fileName = '檔案名稱：' . trim($subscr->getFileName(), '/');
+		$txt_fileName = $this->l->t('Filename') . '：' . trim($subscr->getFileName(), '/');
 		file_put_contents($filePath, $txt_fileName.PHP_EOL.PHP_EOL, FILE_APPEND);
 		if ($label = $subscr->getShareLabel()) {
-			$txt_shareLabel = '分享標籤：' . $label;
+			$txt_shareLabel = $this->l->t('Share Label') . '：' . $label;
 			file_put_contents($filePath, $txt_shareLabel.PHP_EOL.PHP_EOL, FILE_APPEND);
 		}
-		$txt_subscrLog = '訂閱通知:'.PHP_EOL.PHP_EOL;
+		$txt_subscrLog = $this->l->t('Subscription log') . '：' . PHP_EOL.PHP_EOL;
 		foreach($logs as $log) {
 			$formatTime = date('Y-m-d H:i', $log->getSubscrTime());
 			$log_time = '['. $formatTime .']';
@@ -139,7 +138,7 @@ class LogController extends Controller {
 	public function downloadFile(int $subscrId) {
 		$path = $this->logFileDir . '/' . $subscrId . '.txt';
 		if (file_exists($path)) {
-			$filename = '訂閱通知紀錄'.$subscrId.'.txt';
+			$filename = $this->l->t('SubscriptionLog').$subscrId.'.txt';
 			$resp = new StreamResponse($path);
 			$resp->addHeader('Content-Type', 'application/octet-stream');
 			$resp->addHeader('Content-Disposition', 'attachment; filename="'.$filename.'"');

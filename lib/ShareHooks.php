@@ -1,18 +1,18 @@
 <?php
 namespace OCA\FileSubscription;
 
+use OCP\IL10N;
 use OCP\Share\IShare;
 use Symfony\Component\EventDispatcher\GenericEvent;
 use OCP\AppFramework\OCS\OCSBadRequestException;
 use OCP\AppFramework\OCS\OCSException;
-// use OCP\AppFramework\OCS\OCSForbiddenException;
 use OCA\FileSubscription\Manager;
 use OCA\FileSubscription\Model\SubscriptionDoesNotExistException;
 
 class ShareHooks {
 
 	/**
-	 * Unsharing event: 刪除分享連結前，檢查有沒有訂閱
+	 * preUnshare event: 刪除分享連結前，檢查有沒有訂閱
 	 *
 	 * @param GenericEvent $event
 	 * @throws OCSBadRequestException
@@ -33,11 +33,11 @@ class ShareHooks {
 			} catch (SubscriptionDoesNotExistException $e) {
 				return;
 			}
-
 			if (!$emails || count($emails) === 0) return;
 			$emailsArr = \json_decode($emails, true);
 			if (count($emailsArr) > 0) {
-				throw new OCSBadRequestException('此分享連結尚有訂閱者，無法取消分享');
+				$l10n = \OC::$server->getL10N('filesubscription');
+				throw new OCSBadRequestException($l10n->t('This share has subscribers, unable to unshare.'));
 			}
 		}
 	}
@@ -64,10 +64,8 @@ class ShareHooks {
 
 		$node = $share->getNode();
 		$fileOwner = $node->getOwner()->getUid();
-
 		if ($currentUser === $fileOwner && $shareType === IShare::TYPE_LINK) {
 			\OC::$server->query(Manager::class)->createSubscription($share->getId(), $node->getId(), $fileOwner);
 		}
-
 	}
 }

@@ -2,19 +2,16 @@
 import '../css/sharedfile.scss'
 
 const SharedFile = {
-
+	appId: 'filesubscription',
 	sharingToken: $('#sharingToken').val(),
-
 	init() {
 		// 取得此分享連結是否啟用訂閱
 		$.ajax({
 			context: this,
-			url: OC.generateUrl('/apps/filesubscription/subscribe/state/' + this.sharingToken),
+			url: OC.generateUrl(`/apps/${this.appId}/subscribe/state/${this.sharingToken}`),
 			type: 'GET',
 		}).done(function(res) {
 			if (res) this.renderHeader()
-		}).fail(function(e) {
-			console.debug('filesubscription get subscribeState fail()', e)
 		})
 	},
 
@@ -26,9 +23,13 @@ const SharedFile = {
 			headerRight.insertBefore(newHeader, headerRight.firstChild)
 
 			// header content
-			const content = OCA.FileSubscription.Templates['sharedfile-header']({ placeholder: 'Enter your email' })
+			const content = OCA.FileSubscription.Templates['sharedfile-header']({
+				title: t(this.appId, 'Subscription'),
+				description: t(this.appId, 'Subscribe this file to get the new version of the file and modification instructions.'),
+				placeholder: t(this.appId, 'Enter your email'),
+				unsubscribe: t(this.appId, 'Unsubscribe'),
+			})
 			$('#filesubscription-header').append(content)
-
 			$('#subscription-icon').on('click', this._onOpenEvent.bind(this))
 			$('form#subscription-mail').on('submit', this._onConfirmEvent.bind(this))
 			$('a#unsubscr').on('click', this._onUnsubscrEvent.bind(this))
@@ -43,32 +44,34 @@ const SharedFile = {
 	_onConfirmEvent(e) {
 		e.stopPropagation()
 		e.preventDefault()
-
 		const msgEl = $('#subscription-content .msg')
-		const msgResponse = {
-			status: '',
-			data: { message: '' }
-		}
-
+		const msgResponse = { status: '', data: { message: '' } }
 		const token = this.sharingToken
 		const mailAddr = $('form#subscription-mail input[name="email"]').val()
-
+		if (mailAddr === '') {
+			msgResponse.data.message = t(this.appId, 'Please enter Email')
+			OC.msg.finishedAction(msgEl, msgResponse)
+			return
+		}
 		$.ajax({
-			url: OC.generateUrl('/apps/filesubscription/subscribe'),
+			context: this,
+			url: OC.generateUrl(`/apps/${this.appId}/subscribe`),
 			type: 'POST',
 			data: { token, mailAddr },
 			beforeSend() {
 				$('form#subscription-mail input').attr('disabled', 'disabled')
-				OC.msg.startAction(msgEl, '處理中...')
+				OC.msg.startAction(msgEl, t(this.appId, 'Setting...'))
 			}
 		}).done(function() {
-			msgResponse.data.message = '訂閱成功'
+			msgResponse.data.message = t(this.appId, 'Subscribed')
 			msgResponse.status = 'success'
 			$('form#subscription-mail input[name="email"]').val('')
-		}).fail(function(e) {
-			msgResponse.data.message = '無法訂閱'
-			console.debug('filesubscription _onConfirmEvent fail()', e)
-
+		}).fail(function(resp) {
+			msgResponse.data.message = t(this.appId, 'Unable to subscribe')
+			if (typeof resp.responseJSON.message != 'undefined') {
+				msgResponse.data.message += ': '
+				msgResponse.data.message += resp.responseJSON.message
+			}
 		}).always(function(resp) {
 			OC.msg.finishedAction(msgEl, msgResponse)
 			$('form#subscription-mail input').removeAttr('disabled')
@@ -80,36 +83,38 @@ const SharedFile = {
 		e.preventDefault()
 
 		const msgEl = $('#subscription-content .msg')
-		const msgResponse = {
-			status: '',
-			data: { message: '' }
-		}
-
+		const msgResponse = { status: '', data: { message: '' } }
 		const token = this.sharingToken
 		const mailAddr = $('form#subscription-mail input[name="email"]').val()
-
+		if (mailAddr === '') {
+			msgResponse.data.message = t(this.appId, 'Please enter Email')
+			OC.msg.finishedAction(msgEl, msgResponse)
+			return
+		}
 		$.ajax({
-			url: OC.generateUrl('/apps/filesubscription/subscribe'),
+			context: this,
+			url: OC.generateUrl(`/apps/${this.appId}/subscribe`),
 			type: 'DELETE',
 			data: { token, mailAddr },
 			beforeSend() {
 				$('form#subscription-mail input').attr('disabled', 'disabled')
-				OC.msg.startAction(msgEl, '處理中...')
+				OC.msg.startAction(msgEl, t(this.appId, 'Setting...'))
 			}
 		}).done(function() {
-			msgResponse.data.message = '已取消'
+			msgResponse.data.message = t(this.appId, 'Unsubscribed')
 			msgResponse.status = 'success'
 			$('form#subscription-mail input[name="email"]').val('')
-		}).fail(function(e) {
-			msgResponse.data.message = '無法取消訂閱'
-			console.debug('filesubscription _onUnsubscrEvent fail()', e)
-
+		}).fail(function(resp) {
+			msgResponse.data.message = t(this.appId, 'Unable to unsubscribe')
+			if (typeof resp.responseJSON.message != 'undefined') {
+				msgResponse.data.message += ': '
+				msgResponse.data.message += resp.responseJSON.message
+			}
 		}).always(function(resp) {
 			OC.msg.finishedAction(msgEl, msgResponse)
 			$('form#subscription-mail input').removeAttr('disabled')
 		})
-
-	}
+	},
 }
 
 if (!OCA.FileSubscription) OCA.FileSubscription = {}

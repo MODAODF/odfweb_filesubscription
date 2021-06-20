@@ -5,6 +5,7 @@ use OCP\IRequest;
 use OCP\Defaults;
 use OCP\IConfig;
 use OCP\IUser;
+use OCP\IL10N;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
@@ -25,6 +26,9 @@ class SubscribeController extends Controller {
 	/** @var IConfig */
 	private $config;
 
+	/** @var IL10N */
+	private $l;
+
 	/** @var Manager */
 	private $manager;
 
@@ -36,6 +40,7 @@ class SubscribeController extends Controller {
 
 	public function __construct($AppName,
 								IConfig $config,
+								IL10N $l,
 								IRequest $request,
 								Manager $manager,
 								ITimeFactory $timeFactory,
@@ -43,6 +48,7 @@ class SubscribeController extends Controller {
 		parent::__construct($AppName, $request);
 		$this->appName = $AppName;
 		$this->config = $config;
+		$this->l = $l;
 		$this->manager = $manager;
 		$this->timeFactory = $timeFactory;
 		$this->shareManager = $shareManager;
@@ -55,6 +61,8 @@ class SubscribeController extends Controller {
 
 	/**
 	 * 取得 分享連結和訂閱資訊（側邊攔初始化資料）
+	 * @param int $fileId
+	 * @param string $path
 	 * @NoAdminRequired
 	 */
 	public function index(int $fileId, string $path) {
@@ -63,7 +71,7 @@ class SubscribeController extends Controller {
 		// 確認是否為檔案擁有者
 		$fileinfo = Filesystem::getFileInfo(json_decode($path));
 		if ($fileinfo->getOwner()->getuid() !== $uid) {
-			return new DataResponse(['result' => false, 'message' => 'not file owner']);
+			return new DataResponse(['result' => false, 'message' => $this->l->t('Not file owner')]);
 		}
 
 		if(!$this->shareApi) return new NotFoundResponse();
@@ -89,7 +97,10 @@ class SubscribeController extends Controller {
 	}
 
 	/**
-	 * 重整訂閱料
+	 * 重整訂閱資料
+	 * @param string $uid
+	 * @param int $fileId
+	 * @param string $path
 	 */
 	private function refresh(string $uid, int $fileId, string $path) {
 		$shares = $this->shareApi->getShares('', '', '', $path, ''); // DataResponse
@@ -98,7 +109,6 @@ class SubscribeController extends Controller {
 				try {
 					$subscription = $this->manager->getSubscrByShareId($share['id']);
 				} catch (DoesNotExistException $e) {
-					// 有分享連結 但沒有訂閱資料 => 新增訂閱資料
 					$this->manager->createSubscription($share['id'], $fileId, $uid);
 				}
 			}
@@ -108,6 +118,7 @@ class SubscribeController extends Controller {
 	/**
 	 * 更新訂閱資訊
 	 * @param int $shareId
+	 * @param array $setVal
 	 * @NoAdminRequired
 	 */
 	public function update(int $shareId, $setVal) {
@@ -125,10 +136,7 @@ class SubscribeController extends Controller {
 	public function cancel(int $shareId) {
 		$subscription = $this->manager->getSubscrByShareId($shareId);
 		if(count(\json_decode($subscription->getEmails())) < 1) {
-			return new DataResponse(
-				['message' => '沒有訂閱者'],
-				Http::STATUS_OK
-			);
+			return new DataResponse(['message' => $this->l->t('No subscribers')]);
 		};
 
 		// 取得分享連結 -> 確認操作者的身份
@@ -138,13 +146,12 @@ class SubscribeController extends Controller {
 		$canAccess = $shareData[0]['uid_owner'] === $uid || $shareData[0]['uid_initiator'] === $uid;
 		if (!$canAccess) {
 			return new DataResponse(
-				['message' => '無操作權限'], // user must be share owner or initiator
+				['message' => $this->l->t('Not authorized to cancel this subscription')],
 				Http::STATUS_FORBIDDEN
 			);
 		}
 
 		// 寄信給所有訂閱者
-		// TODO: 目前不管信有沒有寄成功
 		$mailController = \OC::$server->query('OCA\FileSubscription\Controller\MailController');
 		$mail_dataResp = $mailController->cancelMail($shareId); //DataResponse
 
@@ -159,10 +166,9 @@ class SubscribeController extends Controller {
 
 	/**
 	 * 取得單一分享連結的訂閱啟用值
+	 * @param string $token
 	 * @NoAdminRequired
 	 * @PublicPage
-	 *
-	 * @param string $token
 	 */
 	public function getState(string $token) {
 		try {
@@ -176,22 +182,23 @@ class SubscribeController extends Controller {
 
 	/**
 	 * 加入訂閱者 Email
-	 *
+	 * @param string $token
+	 * @param string $mailAddr
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
 	 * @PublicPage
-	 *
-	 * @param string $token
-	 * @param string $mailAddr
-	 *
 	 */
 	public function addSubscriber(string $token, string $mailAddr) {
+		if (trim($mailAddr) === "") {
+			return new DataResponse(
+				['message' => $this->l->t('Please enter Email')], Http::STATUS_INTERNAL_SERVER_ERROR
+			);
+		}
 		try {
 			$shareId = $this->shareManager->getShareByToken($token)->getId();
 		} catch (ShareNotFound $e) {
 			return new DataResponse([$e->getMessage()], Http::STATUS_NOT_FOUND);
 		}
-
 		try {
 			$subscription = $this->manager->addIntoEMails($shareId, $mailAddr);
 		} catch (\Exception $e) {
@@ -201,22 +208,23 @@ class SubscribeController extends Controller {
 
 	/**
 	 * 取消訂閱者 Email
-	 *
+	 * @param string $token
+	 * @param string $mailAddr
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
 	 * @PublicPage
-	 *
-	 * @param string $token
-	 * @param string $mailAddr
-	 *
 	 */
 	public function removeSubscriber(string $token, string $mailAddr) {
+		if (trim($mailAddr) === "") {
+			return new DataResponse(
+				['message' => $this->l->t('Please enter Email')], Http::STATUS_INTERNAL_SERVER_ERROR
+			);
+		}
 		try {
 			$shareId = $this->shareManager->getShareByToken($token)->getId();
 		} catch (ShareNotFound $e) {
 			return new DataResponse([$e->getMessage()], Http::STATUS_NOT_FOUND);
 		}
-
 		try {
 			$subscription = $this->manager->rmFromEmails($shareId, $mailAddr);
 		} catch (\Exception $e) {
@@ -226,6 +234,8 @@ class SubscribeController extends Controller {
 
 	/**
 	 * 前端需要的資訊
+	 * @param Subscription $subscription
+	 * @return array
 	 */
 	protected function formatDataForFE(Subscription $subscription): array {
 		$result = [
@@ -250,5 +260,4 @@ class SubscribeController extends Controller {
 		}
 		return $result;
 	}
-
 }
