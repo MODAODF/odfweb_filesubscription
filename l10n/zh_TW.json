@@ -16,7 +16,7 @@
     "Subscribe notification" : "訂閱通知",
     "Subscribe cancel notification" : "訂閱取消通知",
     "A new version of the document you subscribed to has been released." : "您訂閱的文件已發布新版本。",
-    "The subscription has been cancelled by the file owner." : "檔案擁有者已取消此訂閱",
+    "Your subscription of \"%s\" has been cancelled by the owner." : "檔案擁有者已取消您對「%s」的訂閱通知。",
     "Not file owner" : "非檔案擁有者",
     "Not authorized to cancel this subscription" : "無權限取消此訂閱",
     "This share has subscribers, unable to unshare." : "此分享連結有訂閱者，無法取消分享",
