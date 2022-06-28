@@ -5,7 +5,7 @@ dir_name=$(shell basename $(CURDIR))
 project_dir=$(CURDIR)/../$(app_name)
 buildjs_dist=$(CURDIR)/js/dist
 target_dir=$(CURDIR)/build
-app_version=0.0.1
+app_version=1.0.1
 
 clean:
 	rm -fr $(buildjs_dist)
