@@ -25,10 +25,9 @@ class BeforeDeleteListener implements IEventListener {
 		$manager = \OC::$server->query(Manager::class);
 		$subscriptions = $manager->getSubscrByFileId($fileId);
 		foreach ($subscriptions as $subscr) {
-			$emails= $subscr->getEmails();
-			if (count($emails) > 0) {
-				throw new \OC\ServerNotAvailableException;
-				break;
+			$emails= $subscr->getEmails() ?? array();
+			if (count(json_decode($emails)) > 0) {
+				throw new \OCP\HintException('此檔案/資料夾尚有訂閱者');
 			}
 		}
 	}
