@@ -54,37 +54,34 @@ class Manager {
 			throw new SubscriptionDoesNotExistException();
 		}
 
-		if ($val_enabled = $setVal['enabled']) {
-			$subscription->setEnabled( $val_enabled === 'true' ? 1:0 );
-		}
-
-		if (isset($setVal['message'])) {
-			$val_message = trim($setVal['message']);
-			$subscription->setMessage( empty($val_message) ? null : $val_message );
-		}
-
-		if (isset($setVal['emails']) && $setVal['emails'] === 'cancel') {
-			$subscription->setEmails(null); // 取消訂閱
-		}
-
-		if ($setVal['updateMessageTime']) {
-			$subscription->setLastMessageTime($this->timeFactory->getTime());
-		}
-
-		if ($setVal['updateEmailTime']) {
-			$subscription->setLastEmailTime($this->timeFactory->getTime());
-		}
-
-		if ($setVal['cancelTime']) {
-			$subscription->setLastCancelTime($this->timeFactory->getTime());
-		}
-
-		if ($setVal['fileName']) {
-			$subscription->setFileName($setVal['fileName']);
-		}
-
-		if (isset($setVal['shareLabel'])) {
-			$subscription->setShareLabel($setVal['shareLabel']);
+		foreach($setVal as $column => $val) {
+			switch($column) {
+				case 'shareLabel':
+					$subscription->setShareLabel($val);
+					break;
+				case 'fileName':
+					$subscription->setFileName($val);
+					break;
+				case 'enabled':
+					$subscription->setEnabled($val === 'true' ? 1:0);
+					break;
+				case 'message':
+					$message = trim($val);
+					$subscription->setMessage(empty($message) ? null : $message);
+					break;
+				case 'updateMessageTime':
+					$subscription->setLastMessageTime($this->timeFactory->getTime());
+					break;
+				case 'updateEmailTime':
+					$subscription->setLastEmailTime($this->timeFactory->getTime());
+					break;
+				case 'emails' && ($val === 'cancel'): // 取消訂閱
+					$subscription->setEmails(null);
+					break;
+				case 'cancelTime':
+					$subscription->setLastCancelTime($this->timeFactory->getTime());
+					break;
+			}
 		}
 
 		if ($subscription instanceof Subscription) {
