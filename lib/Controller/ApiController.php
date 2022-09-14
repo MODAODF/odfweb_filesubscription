@@ -11,7 +11,7 @@ use OCP\Share\IShare;
 use OCP\Share\IManager as ShareManager;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
-use OCP\AppFramework\Http\JSONResponse;
+use OCA\FileSubscription\JSONResponse;
 use OCA\FileSubscription\Model\Subscription;
 use OCA\FileSubscription\Model\SubscriptionMapper;
 
