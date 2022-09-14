@@ -16,5 +16,7 @@ return [
 		['name' => 'log#downloadFile', 'url' => '/log/download/{subscrId}', 'verb' => 'GET'],
 		['name' => 'log#deleteAll', 'url' => '/log/{shareId}', 'verb' => 'DELETE'],
 
+		['name' => 'api#status', 'url' => '/status/{token}', 'verb' => 'GET'],
+		['name' => 'api#statusAll', 'url' => '/status', 'verb' => 'GET'],
 	]
 ];

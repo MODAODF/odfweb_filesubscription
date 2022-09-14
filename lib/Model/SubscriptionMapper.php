@@ -71,4 +71,15 @@ class SubscriptionMapper extends QBMapper {
 		return $query->execute();
 	}
 
+	/**
+	 * 取得所有訂閱資料
+	 */
+	public function getAll() {
+		$query = $this->db->getQueryBuilder();
+		$query->select(['t.*', 's.token'])->from($this->getTableName(), 't')
+			->join( 't', 'share', 's', $query->expr()->eq('t.share_id', 's.id'));
+		$stmt = $query->execute();
+		return $stmt->fetchAll();
+	}
+
 }
