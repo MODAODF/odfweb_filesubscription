@@ -11,6 +11,11 @@ use OCP\Files\Events\Node\BeforeNodeDeletedEvent;
 use OCA\FileSubscription\Manager;
 
 class BeforeDeleteListener implements IEventListener {
+	private Manager $manager;
+
+	public function __construct(Manager $manager) {
+		$this->manager = $manager;
+	}
 
 	/**
 	 * 刪除檔案前，檢查有沒有訂閱者
@@ -21,12 +26,10 @@ class BeforeDeleteListener implements IEventListener {
 		}
 
 		$fileId = $event->getNode()->getId();
-
-		$manager = \OC::$server->query(Manager::class);
-		$subscriptions = $manager->getSubscrByFileId($fileId);
+		$subscriptions = $this->manager->getSubscrByFileId($fileId);
 		foreach ($subscriptions as $subscr) {
-			$emails= $subscr->getEmails() ?? array();
-			if (count(json_decode($emails)) > 0) {
+			$emails = $subscr->getEmails() ?? null;
+			if (!is_null($emails) && count(json_decode($emails)) > 0) {
 				throw new \OCP\HintException('此檔案/資料夾尚有訂閱者');
 			}
 		}

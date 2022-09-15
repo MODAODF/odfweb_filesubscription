@@ -5,17 +5,6 @@ const SharedFile = {
 	appId: 'filesubscription',
 	sharingToken: $('#sharingToken').val(),
 	init() {
-		// 取得此分享連結是否啟用訂閱
-		$.ajax({
-			context: this,
-			url: OC.generateUrl(`/apps/${this.appId}/subscribe/state/${this.sharingToken}`),
-			type: 'GET',
-		}).done(function(res) {
-			if (res) this.renderHeader()
-		})
-	},
-
-	renderHeader() {
 		const headerRight = document.querySelector('#header .header-right')
 		if (!document.getElementById('filesubscription-header')) {
 			const newHeader = document.createElement('div')

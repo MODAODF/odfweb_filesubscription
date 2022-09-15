@@ -11,9 +11,10 @@ use OCA\Files\Event\LoadSidebar;
 use OCP\Files\Events\Node\BeforeNodeDeletedEvent;
 use OCA\FileSubscription\Listener\LoadSidebarScripts;
 use OCP\EventDispatcher\IEventDispatcher;
-// use OCA\Files\Event\LoadAdditionalScriptsEvent;
 use OCA\FileSubscription\ShareHooks;
 use OCA\FileSubscription\Listener\BeforeDeleteListener;
+use OCA\FileSubscription\Listener\BeforeSharingRenderedListener;
+use OCA\Files_Sharing\Event\BeforeTemplateRenderedEvent as SharingBeforeTemplateRenderedEvent;
 
 class Application extends App implements IBootstrap {
 	public const APP_ID = 'filesubscription';
@@ -24,23 +25,15 @@ class Application extends App implements IBootstrap {
 
 	public function register(IRegistrationContext $context): void {
 
-		// 檔案側邊欄 載入訂閱功能
 		$context->registerEventListener(LoadSidebar::class, LoadSidebarScripts::class);
-
-		// 分享檔案 導覽列載入訂閱欄位
-		$dispatcher = $this->getContainer()->query(IEventDispatcher::class);
-		$dispatcher->addListener('OCA\Files_Sharing::loadAdditionalScripts', function() {
-			\OCP\Util::addScript(self::APP_ID, 'dist/sharedfile');
-			\OCP\Util::addScript(self::APP_ID, 'templates');
-		});
+		$context->registerEventListener(SharingBeforeTemplateRenderedEvent::class, BeforeSharingRenderedListener::class);
+		$context->registerEventListener(BeforeNodeDeletedEvent::class, BeforeDeleteListener::class);
 
 		// 分享連結hook
+		$dispatcher = $this->getContainer()->query(IEventDispatcher::class);
 		$dispatcher->addListener('OCP\Share::postShare', [ShareHooks::class, 'postShare']);
 		$dispatcher->addListener('OCP\Share::preUnshare', [ShareHooks::class, 'preUnshare']);
 		$dispatcher->addListener('OCP\Share::postUnshare', [ShareHooks::class, 'postUnshare']);
-
-		// 刪除檔案前檢查
-		$dispatcher->addServiceListener(BeforeNodeDeletedEvent::class, BeforeDeleteListener::class);
 	}
 
 	public function boot(IBootContext $context): void {
