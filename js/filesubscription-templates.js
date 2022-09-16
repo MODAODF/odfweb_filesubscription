@@ -10,13 +10,15 @@ templates['sharedfile-header'] = template({"compiler":[8,">= 4.3.0"],"main":func
 
   return "<div id=\"subscription-icon\" class=\"icon-mail\"></div>\n\n<div id=\"subscription-content\" class=\"popovermenu hidden\">\n    <div class=\"content\">\n        <h3>"
     + alias4(((helper = (helper = lookupProperty(helpers,"title") || (depth0 != null ? lookupProperty(depth0,"title") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"title","hash":{},"data":data,"loc":{"start":{"line":5,"column":12},"end":{"line":5,"column":21}}}) : helper)))
-    + "</h3>\n        <em>"
-    + alias4(((helper = (helper = lookupProperty(helpers,"description") || (depth0 != null ? lookupProperty(depth0,"description") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"description","hash":{},"data":data,"loc":{"start":{"line":6,"column":12},"end":{"line":6,"column":27}}}) : helper)))
-    + "</em>\n        <form id=\"subscription-mail\">\n            <input id=\"submit-mail\" type=\"submit\" class=\"hidden\">\n            <input type=\"email\" name=\"email\" placeholder=\""
-    + alias4(((helper = (helper = lookupProperty(helpers,"placeholder") || (depth0 != null ? lookupProperty(depth0,"placeholder") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"placeholder","hash":{},"data":data,"loc":{"start":{"line":9,"column":58},"end":{"line":9,"column":73}}}) : helper)))
-    + "\">\n            <label for=\"submit-mail\" class=\"icon-confirm\"></label>\n        </form>\n        <div><a id=\"unsubscr\">"
-    + alias4(((helper = (helper = lookupProperty(helpers,"unsubscribe") || (depth0 != null ? lookupProperty(depth0,"unsubscribe") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"unsubscribe","hash":{},"data":data,"loc":{"start":{"line":12,"column":30},"end":{"line":12,"column":45}}}) : helper)))
-    + "</a></div>\n        <div><span class=\"msg hidden\"></span></div>\n    </div>\n</div>\n";
+    + "</h3>\n        <div>\n            <em>"
+    + alias4(((helper = (helper = lookupProperty(helpers,"description") || (depth0 != null ? lookupProperty(depth0,"description") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"description","hash":{},"data":data,"loc":{"start":{"line":7,"column":16},"end":{"line":7,"column":31}}}) : helper)))
+    + "</em>\n            <form id=\"subscription-mail\">\n                <input id=\"submit-mail\" type=\"submit\" class=\"hidden\">\n                <input type=\"email\" name=\"email\" placeholder=\""
+    + alias4(((helper = (helper = lookupProperty(helpers,"placeholder") || (depth0 != null ? lookupProperty(depth0,"placeholder") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"placeholder","hash":{},"data":data,"loc":{"start":{"line":10,"column":62},"end":{"line":10,"column":77}}}) : helper)))
+    + "\">\n                <label for=\"submit-mail\" class=\"icon-confirm\"></label>\n            </form>\n            <div><a id=\"unsubscr\">"
+    + alias4(((helper = (helper = lookupProperty(helpers,"unsubscribe") || (depth0 != null ? lookupProperty(depth0,"unsubscribe") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"unsubscribe","hash":{},"data":data,"loc":{"start":{"line":13,"column":34},"end":{"line":13,"column":49}}}) : helper)))
+    + "</a></div>\n            <div><span class=\"msg hidden\"></span></div>\n        </div>\n        <div>\n            <em>在 文件應用工具 訂閱此文件</em>\n            <div id=\"subscription-api\">\n                <input id=\"apicode\" type=\"text\" name=\"apicode\" value=\""
+    + alias4(((helper = (helper = lookupProperty(helpers,"apicode") || (depth0 != null ? lookupProperty(depth0,"apicode") : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"apicode","hash":{},"data":data,"loc":{"start":{"line":19,"column":70},"end":{"line":19,"column":81}}}) : helper)))
+    + "\" readonly=\"readonly\" />\n                <button class=\"icon-clippy\"></button>\n            </div>\n        </div>\n    </div>\n</div>\n";
 },"useData":true});
 templates['sidebar-invaildItem'] = template({"1":function(container,depth0,helpers,partials,data) {
     var helper, lookupProperty = container.lookupProperty || function(parent, propertyName) {
