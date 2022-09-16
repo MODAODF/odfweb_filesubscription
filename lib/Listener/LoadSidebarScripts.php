@@ -14,8 +14,9 @@ class LoadSidebarScripts implements IEventListener {
 			return;
 		}
 
-		Util::addScript(Application::APP_ID, 'dist/plugin');
-		Util::addScript(Application::APP_ID, 'templates');
-		Util::addScript(Application::APP_ID, 'dist/tabview');
+		$appid = Application::APP_ID;
+		Util::addScript($appid, $appid.'-plugin');
+		Util::addScript($appid, $appid.'-tabview');
+		Util::addScript($appid, $appid.'-templates');
 	}
 }

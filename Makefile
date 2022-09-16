@@ -3,22 +3,22 @@
 app_name=filesubscription
 dir_name=$(shell basename $(CURDIR))
 project_dir=$(CURDIR)/../$(app_name)
-buildjs_dist=$(CURDIR)/js/dist
+buildjs_dir=$(CURDIR)/js
 target_dir=$(CURDIR)/build
 app_version=1.0.1
 
 clean:
-	rm -fr $(buildjs_dist)
+	rm -fr $(buildjs_dir)
 	rm -fr $(target_dir)
 
 dev: clean
-	node node_modules/handlebars/bin/handlebars -n OCA.FileSubscription.Templates src/templates -f js/templates.js
 	npm run dev
+	node node_modules/handlebars/bin/handlebars -n OCA.FileSubscription.Templates src/templates -f $(buildjs_dir)/$(app_name)-templates.js
 
-buildjs: clean
-	node node_modules/handlebars/bin/handlebars -n OCA.FileSubscription.Templates src/templates -f js/templates.js
+buildjs:clean
 	npm ci
 	npm run build
+	node node_modules/handlebars/bin/handlebars -n OCA.FileSubscription.Templates src/templates -f $(buildjs_dir)/$(app_name)-templates.js
 
 appstore: clean buildjs
 	mkdir -p $(target_dir)

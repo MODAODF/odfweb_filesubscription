@@ -35,8 +35,9 @@ class BeforeSharingRenderedListener implements IEventListener {
 			$shareId = (int)$share->getId();
 			$isEnabled = $this->manager->getEnabled($shareId);
 			if ($isEnabled) {
-				\OCP\Util::addScript(Application::APP_ID, 'dist/sharedfile');
-				\OCP\Util::addScript(Application::APP_ID, 'templates');
+				$appid = Application::APP_ID;
+				\OCP\Util::addScript($appid, $appid.'-sharedfile');
+				\OCP\Util::addScript($appid, $appid.'-templates');
 			}
 		}
 	}
