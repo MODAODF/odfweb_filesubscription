@@ -14,10 +14,13 @@
     .content {
         padding: 1rem;
         min-width: 220px;
-
         & > h3 {
             font-weight: bold;
             text-align: center;
+        }
+        & > div:nth-child(even) {
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--color-border);
         }
         em {
             display: block;
@@ -61,6 +64,16 @@
                 &:active {
                     background-position-y: 55%
                 }
+            }
+        }
+        div#subscription-api {
+            display: flex;
+            margin-top: 15px;
+            button {
+                margin-left: 2px;
+            }
+            input {
+                width: 100%;
             }
         }
     }

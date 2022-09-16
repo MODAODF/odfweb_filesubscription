@@ -17,11 +17,13 @@ const SharedFile = {
 				description: t(this.appId, 'Subscribe this file to get the new version of the file and modification instructions.'),
 				placeholder: t(this.appId, 'Enter your email'),
 				unsubscribe: t(this.appId, 'Unsubscribe'),
+				apicode: window.location.origin + OC.generateUrl(`/apps/${this.appId}/status/${this.sharingToken}`)
 			})
 			$('#filesubscription-header').append(content)
 			$('#subscription-icon').on('click', this._onOpenEvent.bind(this))
 			$('form#subscription-mail').on('submit', this._onConfirmEvent.bind(this))
 			$('a#unsubscr').on('click', this._onUnsubscrEvent.bind(this))
+			$('#subscription-api').on('click', 'input#apicode, button', this._selectCopy.bind(this))
 		}
 	},
 
@@ -104,6 +106,16 @@ const SharedFile = {
 			$('form#subscription-mail input').removeAttr('disabled')
 		})
 	},
+
+	_selectCopy(e) {
+		const apicode = document.getElementById('apicode')
+		if (apicode) {
+			apicode.select()
+			if (e.target.tagName === 'BUTTON') {
+				document.execCommand('copy')
+			}
+		}
+	}
 }
 
 if (!OCA.FileSubscription) OCA.FileSubscription = {}
