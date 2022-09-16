@@ -36,7 +36,7 @@ use OCP\AppFramework\Http\Response;
  */
 class JSONResponse extends Response {
 
-	private const JSON_FLAGS = JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE; // JSON_HEX_TAG
+	private const JSON_FLAGS = JSON_UNESCAPED_SLASHES|JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_FORCE_OBJECT; // JSON_HEX_TAG
 
 	/**
 	 * response data

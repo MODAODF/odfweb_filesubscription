@@ -17,7 +17,7 @@ use OCA\FileSubscription\Model\SubscriptionMapper;
 
 class ApiController extends Controller {
 
-	private const DATE_FORMAT = 'Y/m/d'; //  H:i:s
+	private const DATE_FORMAT = 'Y/m/d H:i:s';
 	private const DATE_TIME_ZONE = 'Asia/Taipei';
 
 	/** @var IConfig */
