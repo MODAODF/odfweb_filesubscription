@@ -18,5 +18,6 @@ return [
 
 		['name' => 'api#status', 'url' => '/status/{token}', 'verb' => 'GET'],
 		['name' => 'api#statusAll', 'url' => '/status', 'verb' => 'GET'],
+		['name' => 'api#getCode', 'url' => '/apicode/{token}', 'verb' => 'GET'],
 	]
 ];

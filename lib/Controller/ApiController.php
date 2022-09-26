@@ -11,6 +11,7 @@ use OCP\Share\IShare;
 use OCP\Share\IManager as ShareManager;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
+use OCP\AppFramework\Http\TextPlainResponse;
 use OCA\FileSubscription\JSONResponse;
 use OCA\FileSubscription\Model\Subscription;
 use OCA\FileSubscription\Model\SubscriptionMapper;
@@ -49,6 +50,23 @@ class ApiController extends Controller {
 		$this->shareManager = $shareManager;
 		$this->url = $url;
 		$this->l = $l;
+	}
+
+	/**
+	 * 取得 Api token
+	 *
+	 * @PublicPage
+	 *
+	 * @param string $token The share token
+	 * @return JSONResponse
+	 */
+	public function getCode(string $token) {
+		if (!$token) {
+			return new TextPlainResponse('', Http::STATUS_NOT_FOUND);
+		}
+		$originURL = $this->url->linkToRouteAbsolute('filesubscription.api.status', ['token' => $token]);
+		$codeString = base64_encode($originURL);
+		return new JSONResponse($codeString, Http::STATUS_OK);
 	}
 
 	/**

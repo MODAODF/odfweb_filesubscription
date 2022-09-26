@@ -17,8 +17,8 @@ const SharedFile = {
 				description: t(this.appId, 'Subscribe this file to get the new version of the file and modification instructions.'),
 				placeholder: t(this.appId, 'Enter your email'),
 				unsubscribe: t(this.appId, 'Unsubscribe'),
-				apicode: window.location.origin + OC.generateUrl(`/apps/${this.appId}/status/${this.sharingToken}`)
 			})
+			this._getApiCode()
 			$('#filesubscription-header').append(content)
 			$('#subscription-icon').on('click', this._onOpenEvent.bind(this))
 			$('form#subscription-mail').on('submit', this._onConfirmEvent.bind(this))
@@ -115,6 +115,20 @@ const SharedFile = {
 				document.execCommand('copy')
 			}
 		}
+	},
+
+	_getApiCode() {
+		$.ajax({
+			url: OC.generateUrl(`/apps/${this.appId}/apicode/${this.sharingToken}`),
+			type: 'GET',
+		}).done(function(resp) {
+			if (resp) {
+				$('#apicode').val(resp)
+				$('#subscription-api').parent('div').show()
+			}
+		}).fail(function(resp) {
+			// console.log(resp)
+		})
 	}
 }
 
