@@ -5,7 +5,7 @@ dir_name=$(shell basename $(CURDIR))
 project_dir=$(CURDIR)/../$(app_name)
 buildjs_dir=$(CURDIR)/js
 target_dir=$(CURDIR)/build
-app_version=1.0.2
+app_version=1.0.3
 
 clean:
 	rm -fr $(buildjs_dir)
@@ -38,3 +38,4 @@ appstore: clean buildjs
 	--exclude=webpack.common.js \
 	--exclude=webpack.dev.js \
 	--exclude=webpack.prod.js \
+	--exclude=node_modules \

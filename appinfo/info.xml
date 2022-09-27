@@ -7,7 +7,7 @@
 	<description><![CDATA[File Subscription:
 - Users with access to a file can subscribe to email notifications.
 - The file owner can email the new version of the file and modification instructions to the subscribers.]]></description>
-	<version>1.0.2</version>
+	<version>1.0.3</version>
 	<licence>agpl</licence>
     <author mail="develop@ossii.com.tw" homepage="https://ossii.com.tw">sharon wu</author>
 	<category>files</category>
