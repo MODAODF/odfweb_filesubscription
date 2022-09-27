@@ -14,11 +14,11 @@ const SharedFile = {
 			// header content
 			const content = OCA.FileSubscription.Templates['sharedfile-header']({
 				title: t(this.appId, 'Subscription'),
-				description: t(this.appId, 'Subscribe this file to get the new version of the file and modification instructions.'),
+				description: t(this.appId, 'Subscribe this file to get the new version of the file and modification instructions or track file in the NDC ODF Application Tools.'),
 				placeholder: t(this.appId, 'Enter your email'),
 				unsubscribe: t(this.appId, 'Unsubscribe'),
+				tokendescription: t(this.appId, 'File token for NDC ODF Application Tools')
 			})
-			this._getApiCode()
 			$('#filesubscription-header').append(content)
 			$('#subscription-icon').on('click', this._onOpenEvent.bind(this))
 			$('form#subscription-mail').on('submit', this._onConfirmEvent.bind(this))
@@ -50,6 +50,7 @@ const SharedFile = {
 			type: 'POST',
 			data: { token, mailAddr },
 			beforeSend() {
+				this._rmApiCode()
 				$('form#subscription-mail input').attr('disabled', 'disabled')
 				OC.msg.startAction(msgEl, t(this.appId, 'Setting...'))
 			}
@@ -57,12 +58,14 @@ const SharedFile = {
 			msgResponse.data.message = t(this.appId, 'Subscribed')
 			msgResponse.status = 'success'
 			$('form#subscription-mail input[name="email"]').val('')
+			this._getApiCode()
 		}).fail(function(resp) {
 			msgResponse.data.message = t(this.appId, 'Unable to subscribe')
 			if (typeof resp.responseJSON.message != 'undefined') {
 				msgResponse.data.message += ': '
 				msgResponse.data.message += resp.responseJSON.message
 			}
+			this._rmApiCode()
 		}).always(function(resp) {
 			OC.msg.finishedAction(msgEl, msgResponse)
 			$('form#subscription-mail input').removeAttr('disabled')
@@ -82,6 +85,7 @@ const SharedFile = {
 			OC.msg.finishedAction(msgEl, msgResponse)
 			return
 		}
+		this._rmApiCode()
 		$.ajax({
 			context: this,
 			url: OC.generateUrl(`/apps/${this.appId}/subscribe`),
@@ -115,6 +119,11 @@ const SharedFile = {
 				document.execCommand('copy')
 			}
 		}
+	},
+
+	_rmApiCode() {
+		$('#apicode').val('')
+		$('#subscription-api').parent('div').hide()
 	},
 
 	_getApiCode() {
