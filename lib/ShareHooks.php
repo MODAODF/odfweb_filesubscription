@@ -33,7 +33,7 @@ class ShareHooks {
 			} catch (SubscriptionDoesNotExistException $e) {
 				return;
 			}
-			if (!$emails || count($emails) === 0) return;
+			if (!$emails) return;
 			$emailsArr = \json_decode($emails, true);
 			if (count($emailsArr) > 0) {
 				$l10n = \OC::$server->getL10N('filesubscription');
