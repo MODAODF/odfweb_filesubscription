@@ -39,3 +39,39 @@ appstore: clean buildjs
 	--exclude=webpack.dev.js \
 	--exclude=webpack.prod.js \
 	--exclude=node_modules \
+
+apppackage: clean buildjs
+	mkdir -p $(target_dir)
+	rsync -a \
+	--exclude=.git \
+	--exclude=.github \
+	--exclude=build \
+	--exclude=.gitignore \
+	--exclude=.travis.yml \
+	--exclude=.scrutinizer.yml \
+	--exclude=CONTRIBUTING.md \
+	--exclude=composer.json \
+	--exclude=composer.lock \
+	--exclude=composer.phar \
+	--exclude=.tx \
+	--exclude=l10n/no-php \
+	--exclude=Makefile \
+	--exclude=nbproject \
+	--exclude=screenshots \
+	--exclude=phpunit*xml \
+	--exclude=tests \
+	--exclude=vendor/bin \
+	--exclude=node_modules \
+	--exclude=package-lock.json \
+	--exclude=package.json \
+	--exclude=postcss.config.js \
+	--exclude=src \
+	--exclude=tsconfig.json \
+	--exclude=vendor \
+	--exclude=webpack.* \
+	--exclude=issue_template.md \
+	--exclude=krankerl.toml \
+	--exclude=mkdocs.yml \
+	$(project_dir) $(target_dir)
+	tar -czf $(target_dir)/$(app_name)-$(app_version).tar.gz \
+		-C $(target_dir) $(app_name)
